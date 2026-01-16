@@ -75,8 +75,10 @@ const userSchema = new Schema<IUserModel>(
         type: [Number], // [longitude, latitude]
         required: true,
       },
-      address: String,
-      city: String,
+      address: {
+        district: String,
+        upazila: String,
+      },
     },
 
     // Futuristic Fields
@@ -118,7 +120,6 @@ userSchema.index({ location: "2dsphere" });
 
 // --- Auto-increment Logic (8-digit ID) ---
 userSchema.pre("save", async function () {
-  // 'next' রিমুভ করা হয়েছে
   if (this.isNew) {
     try {
       const lastUser = await mongoose.model("User").findOne().sort("-userId");

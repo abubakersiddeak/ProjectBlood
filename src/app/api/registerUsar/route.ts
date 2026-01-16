@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       password,
       avatar,
       bloodGroup,
-      location, // Should contain { address, city, coordinates: [lng, lat] }
+      location, // Should contain { address:{},  coordinates: [lng, lat] }
       phone,
     } = body;
 
@@ -53,7 +53,6 @@ export async function POST(req: Request) {
         type: "Point",
         coordinates: location.coordinates, // [longitude, latitude]
         address: location.address,
-        city: location.city,
       },
       phone,
     });

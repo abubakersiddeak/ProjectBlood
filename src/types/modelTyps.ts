@@ -25,8 +25,10 @@ export interface IUserModel extends Document {
   location: {
     type: "Point";
     coordinates: [number, number];
-    address?: string;
-    city?: string;
+    address: {
+      district: string;
+      upazila: string;
+    };
   };
   phone?: string;
   status: "active" | "inactive" | "blocked";
