@@ -1,7 +1,7 @@
 "use client";
 
+import { IFormSelectProps } from "@/types/propsTyps";
 import { ChevronDown } from "lucide-react";
-import type { FormSelectProps } from "@/types/formTyps";
 
 export default function FormSelect({
   id,
@@ -14,7 +14,7 @@ export default function FormSelect({
   validation,
   disabled = false,
   className = "",
-}: FormSelectProps) {
+}: IFormSelectProps) {
   const hasError = !!error;
 
   return (

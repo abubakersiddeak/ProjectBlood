@@ -1,8 +1,5 @@
 import Swal from "sweetalert2";
-import {
-  ALLOWED_IMAGE_TYPES,
-  MAX_IMAGE_SIZE,
-} from "@/constants/registrationConstants";
+import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE_MB } from "./constants";
 
 export interface ImageValidationResult {
   isValid: boolean;
@@ -18,7 +15,7 @@ export const validateImage = (file: File): ImageValidationResult => {
     };
   }
 
-  if (file.size > MAX_IMAGE_SIZE) {
+  if (file.size > MAX_IMAGE_SIZE_MB) {
     return {
       isValid: false,
       error: "File size should be less than 5MB",
@@ -52,7 +49,7 @@ export const uploadImageToImgBB = async (file: File): Promise<string> => {
       {
         method: "POST",
         body: formData,
-      }
+      },
     );
 
     if (!response.ok) {

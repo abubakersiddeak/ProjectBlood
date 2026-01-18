@@ -1,4 +1,5 @@
 "use client";
+import { signIn } from "next-auth/react";
 import { useForm, SubmitHandler, useWatch } from "react-hook-form";
 import { useState, useRef, useMemo } from "react";
 import Swal from "sweetalert2";
@@ -10,6 +11,8 @@ import FormInput from "@/components/shared/FormInput";
 import FormSelect from "@/components/shared/FormSelect";
 import { DISTRICT_LIST, getGeoDetails } from "@/lib/geoLocationUtils";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -58,7 +61,7 @@ export default function RegisterPage() {
 
   const { upazilas, coordinates } = useMemo(
     () => getGeoDetails(selectedDistrict, selectedUpazila),
-    [selectedDistrict, selectedUpazila]
+    [selectedDistrict, selectedUpazila],
   );
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,7 +217,13 @@ export default function RegisterPage() {
         confirmButtonText: "Go to Home",
         confirmButtonColor: "#0B6623",
       });
+      const res = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
 
+      console.log("SignIn response:", res);
       reset();
       handleRemoveImage();
 
@@ -236,8 +245,9 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen ">
+      <Navbar />
       {/* Mobile-friendly container with proper spacing */}
-      <div className="container mx-auto px-4 py-4 sm:py-5 md:py-8">
+      <div className="container mx-auto mt-15 px-4 py-4 sm:py-5 md:py-8">
         <div className="max-w-2xl mx-auto">
           {/* Card with responsive padding */}
           <div className="bg-white  shadow-lg sm:shadow-xl border border-gray-100 overflow-hidden">
@@ -482,6 +492,7 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

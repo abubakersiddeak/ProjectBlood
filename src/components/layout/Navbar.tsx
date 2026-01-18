@@ -1,29 +1,19 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { LogOut, LayoutDashboard } from "lucide-react";
 import Swal from "sweetalert2";
-import useAuth from "@/hooks/useAuth";
-import server from "@/lib/api";
-
-// Assuming your User interface looks like this.
-// You should ideally move this to a /types/index.ts file.
-interface UserType {
-  name: string;
-  email: string;
-  avatar: string;
-}
+import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const router = useRouter();
+  const { data: session } = useSession();
 
-  // useAuth should return the UserType or null
-  const { user } = useAuth() as { user: UserType | null };
-
-  const handleLogout = useCallback(() => {
+  const handleLogout = () => {
     Swal.fire({
       title: "Logout Confirmation",
       text: "Are you sure you want to logout?",
@@ -34,37 +24,32 @@ export default function Navbar() {
       confirmButtonText: "Yes, Logout",
       cancelButtonText: "Cancel",
     }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const res = await server.post("/api/auth/logout");
+      if (!result.isConfirmed) return;
 
-          // Note: axios (server) usually uses res.status,
-          // but if you're using fetch, it's res.ok.
-          if (res.status !== 200) {
-            throw new Error("Logout failed");
-          }
+      try {
+        // IMPORTANT: redirect false
+        await signOut({ redirect: false });
 
-          Swal.fire({
-            icon: "success",
-            title: "Logged Out Successfully",
-            text: "You have been logged out.",
-            timer: 1500,
-            showConfirmButton: false,
-          }).then(() => {
-            window.location.href = "/";
-          });
-        } catch (error) {
-          Swal.fire({
-            icon: "error",
-            title: "Something went wrong",
-            text: "Please Retry.",
-            timer: 1500,
-            showConfirmButton: false,
-          });
-        }
+        Swal.fire({
+          icon: "success",
+          title: "Logged Out Successfully",
+          timer: 1200,
+          showConfirmButton: false,
+        });
+
+        router.push("/");
+      } catch (error) {
+        console.error("Logout error:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Logout Failed",
+          text: "Please try again",
+          timer: 1500,
+          showConfirmButton: false,
+        });
       }
     });
-  }, []);
+  };
 
   return (
     <nav className="bg-white shadow-sm fixed w-full top-0 z-50">
@@ -74,13 +59,14 @@ export default function Navbar() {
             href="/"
             className="text-2xl font-bold text-red-500 flex items-center gap-2"
           >
-            <Image
-              src="/bloodlinkLogo.webp"
-              alt="blood logo"
-              height={50}
-              width={50}
-              priority
-            />
+            <span className="text-2xl">
+              <Image
+                src={"/bloodlinkLogo.webp"}
+                alt="blood logo"
+                height={50}
+                width={50}
+              />
+            </span>
             BloodLink BD
           </Link>
 
@@ -105,8 +91,9 @@ export default function Navbar() {
               Search Donors
             </Link>
 
-            {user ? (
+            {session?.user ? (
               <>
+                {/* Dashboard Link */}
                 <Link
                   href="/dashboard"
                   className="text-gray-600 hover:text-red-500 lg:px-3 py-2 flex items-center gap-2"
@@ -115,32 +102,39 @@ export default function Navbar() {
                   Dashboard
                 </Link>
 
+                {/* User Profile Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-3 py-2 transition-colors cursor-pointer"
+                    type="button"
                   >
-                    <div className="w-8 h-8 border-red-500 border relative overflow-hidden flex items-center justify-center">
+                    <div className="w-8 h-8 border-red-500 border relative overflow-hidden flex items-center justify-center text-white font-semibold">
                       <Image
-                        src={user.avatar || "/default-avatar.png"}
+                        src={
+                          session?.user?.avatar ||
+                          "https://i.ibb.co.com/20yB5J5L/vecteezy-man-empty-avatar-vector-photo-placeholder-for-social-36594092.webp"
+                        }
                         alt="User"
-                        fill
-                        style={{ objectFit: "cover" }}
+                        height={500}
+                        width={500}
+                        className="object-cover"
                       />
                     </div>
                     <span className="text-gray-700 font-medium">
-                      {user.name}
+                      {session?.user?.name}
                     </span>
                   </button>
 
+                  {/* Dropdown Menu */}
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg">
                       <div className="px-4 py-3 border-b border-gray-200">
                         <p className="text-sm font-semibold text-gray-900">
-                          {user.name}
+                          {session?.user?.name}
                         </p>
                         <p className="text-xs text-gray-500 truncate">
-                          {user.email}
+                          {session?.user?.email}
                         </p>
                       </div>
                       <Link
@@ -151,9 +145,18 @@ export default function Navbar() {
                         <LayoutDashboard className="w-4 h-4" />
                         Dashboard
                       </Link>
+                      {/* <Link
+                        href="/profile"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <User className="w-4 h-4" />
+                        Profile
+                      </Link> */}
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer border-t border-gray-200"
+                        type="button"
                       >
                         <LogOut className="w-4 h-4" />
                         Logout
@@ -176,7 +179,8 @@ export default function Navbar() {
           <button
             className="md:hidden p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle Menu"
+            type="button"
+            aria-label="Toggle menu"
           >
             <svg
               className="w-6 h-6"
@@ -208,18 +212,85 @@ export default function Navbar() {
             >
               Home
             </Link>
-            {/* ... other mobile links ... */}
-            {user && (
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  handleLogout();
-                }}
-                className="w-full text-left flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 border-t border-gray-200"
+            <Link
+              href="/donation-requests"
+              className="block px-4 py-2 text-gray-600 hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              All Requests
+            </Link>
+            <Link
+              href="/search"
+              className="block px-4 py-2 text-gray-600 hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Search Donors
+            </Link>
+
+            {session?.user ? (
+              <>
+                {/* User Info */}
+                <div className="px-4 py-3 bg-gray-50 border-y border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-red-500 flex items-center justify-center text-white font-semibold overflow-hidden">
+                      <Image
+                        src={
+                          session?.user?.avatar ||
+                          "https://i.ibb.co.com/20yB5J5L/vecteezy-man-empty-avatar-vector-photo-placeholder-for-social-36594092.webp"
+                        }
+                        alt="User"
+                        height={40}
+                        width={40}
+                        className="object-cover"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {session?.user?.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {session?.user?.email}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-50"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </Link>
+                {/* <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-50"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <User className="w-4 h-4" />
+                  Profile
+                </Link> */}
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 border-t border-gray-200"
+                  type="button"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="block px-4 py-2 text-gray-600 hover:bg-gray-50"
+                onClick={() => setIsMenuOpen(false)}
               >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
+                Login
+              </Link>
             )}
           </div>
         )}

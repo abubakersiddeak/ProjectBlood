@@ -38,10 +38,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const { email, password } = credentials;
 
           await dbConnect();
-          const user = (await UserModel.findOne({
-            email,
-          })) as IUserModel | null;
-
+          const user = (await UserModel.findOne({ email }).select(
+            "+password"
+          )) as IUserModel | null;
           if (!user) {
             return null;
           }

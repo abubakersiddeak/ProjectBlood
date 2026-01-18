@@ -1,4 +1,7 @@
 "use client";
+import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
+import Hero from "@/components/shared/Hero";
 
 // import Footer from "@/components/layout/Footer";
 // import Navbar from "@/components/layout/Navbar";
@@ -24,14 +27,14 @@ export default function Home(): React.JSX.Element {
 
   return (
     <main className="relative min-h-screen bg-white">
-      <h3>hello</h3>
-      {/* <Navbar />
+      <Navbar />
+      <Navbar />
       <Hero />
-      <ShowDonationReq />
-      <WhyDonateBlood />
-      <DonationProcess />
-      <Contact />
-      <Footer /> */}
+      {/* <ShowDonationReq /> */}
+      {/* <WhyDonateBlood /> */}
+      {/* <DonationProcess /> */}
+      {/* <Contact /> */}
+      <Footer />
     </main>
   );
 }

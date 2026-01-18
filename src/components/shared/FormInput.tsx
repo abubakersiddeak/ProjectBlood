@@ -1,5 +1,6 @@
 "use client";
 
+import { IFormInputProps } from "@/types/propsTyps";
 import { EyeOff, Eye } from "lucide-react";
 
 export default function FormInput({
@@ -16,7 +17,7 @@ export default function FormInput({
   onTogglePassword,
   disabled = false,
   className = "",
-}: FormInputProps) {
+}: IFormInputProps) {
   const inputType = showPasswordToggle
     ? showPassword
       ? "text"

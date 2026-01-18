@@ -1,8 +1,4 @@
-import {
-  EMAIL_PATTERN,
-  PASSWORD_MIN_LENGTH,
-  PHONE_PATTERN,
-} from "@/constants/registrationConstants";
+import { EMAIL_PATTERN, PASSWORD_MIN_LENGTH, PHONE_PATTERN } from "./constants";
 
 export const validationRules = {
   fullName: {

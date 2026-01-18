@@ -12,7 +12,7 @@ import {
   Droplet,
   ArrowRight,
   Activity,
-  LucideIcon, // Type for Lucide icons
+  LucideIcon,
 } from "lucide-react";
 
 /** 1. Define the interface for the feature items **/
@@ -140,7 +140,7 @@ export default function Hero() {
                 className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4 justify-center lg:justify-start"
               >
                 <Link
-                  href="/registerDonor"
+                  href="/register"
                   className="group relative bg-red-600 text-white px-6 md:px-8 py-3 md:py-4 text-sm md:text-base hover:bg-red-700 transition-all font-bold uppercase tracking-wide text-center overflow-hidden cursor-pointer"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
@@ -154,7 +154,7 @@ export default function Hero() {
                       className="group-hover:translate-x-1 transition-transform"
                     />
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-700 to-red-800 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-linear-to-r from-red-700 to-red-800 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 </Link>
 
                 <Link
@@ -169,7 +169,7 @@ export default function Hero() {
               </motion.div>
 
               {/* Fund Donation Link */}
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
@@ -187,7 +187,7 @@ export default function Hero() {
                     className="group-hover:translate-x-1 transition-transform"
                   />
                 </Link>
-              </motion.div>
+              </motion.div> */}
             </motion.div>
 
             {/* Right Image Section */}
@@ -207,10 +207,10 @@ export default function Hero() {
                     width={500}
                     src="https://i.ibb.co.com/yBGfjN6r/photo-1615461066159-fea0960485d5.jpg"
                     alt="Blood Donation - Saving Lives"
-                    className="w-full h-54 sm:h-80 md:h-90 lg:h-[350px] xl:h-[400px] 2xl:h-[500px] object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-54 sm:h-80 md:h-90 lg:h-87.5 xl:h-100 2xl:h-125 object-cover group-hover:scale-105 transition-transform duration-500"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute top-4 left-4 bg-white px-4 py-2 shadow-lg">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
@@ -226,7 +226,7 @@ export default function Hero() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1 }}
-                  className="relative md:absolute -bottom-6 md:-bottom-8 right-0 md:-right-6 bg-gradient-to-br from-red-600 to-red-700 p-4 md:p-6 shadow-2xl max-w-full md:max-w-xs mx-4 md:mx-0 border-4 border-white mt-4 md:mt-0"
+                  className="relative md:absolute -bottom-6 md:-bottom-8 right-0 md:-right-6 bg-linear-to-br from-red-600 to-red-700 p-4 md:p-6 shadow-2xl max-w-full md:max-w-xs mx-4 md:mx-0 border-4 border-white mt-4 md:mt-0"
                 >
                   <div className="flex items-start gap-3 md:gap-4">
                     <div className="bg-white/20 backdrop-blur-sm p-2 md:p-3 shrink-0">
@@ -236,9 +236,12 @@ export default function Hero() {
                       <div className="text-red-100 font-bold text-xs md:text-sm uppercase tracking-wider mb-1">
                         Emergency Hotline
                       </div>
-                      <div className="text-white font-bold text-lg md:text-xl tracking-wide">
+                      <a
+                        href="tel:+8801790884776"
+                        className="text-white font-bold text-lg md:text-xl tracking-wide hover:underline"
+                      >
                         +880 1790884776
-                      </div>
+                      </a>
                       <div className="text-red-100 text-xs mt-2 flex items-center gap-1">
                         <Clock size={12} />
                         <span>Available 24/7</span>

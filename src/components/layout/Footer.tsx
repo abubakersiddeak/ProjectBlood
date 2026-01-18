@@ -10,15 +10,12 @@ import {
   Instagram,
   Linkedin,
   ArrowRight,
-  Heart,
-  Shield,
-  Users,
-  Clock,
-  LucideIcon, // Import the type for Lucide icons
+  LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
+import { FormEvent } from "react";
 
-/** 1. Define Interfaces for your data **/
+/** 1. Define Interfaces  data **/
 
 interface FooterLink {
   href: string;
@@ -28,12 +25,6 @@ interface FooterLink {
 interface SocialLink {
   icon: LucideIcon;
   href: string;
-  label: string;
-}
-
-interface StatItem {
-  icon: LucideIcon;
-  value: string;
   label: string;
 }
 
@@ -59,12 +50,11 @@ export default function Footer() {
     { icon: Linkedin, href: "#", label: "LinkedIn" },
   ];
 
-  const stats: StatItem[] = [
-    { icon: Users, value: "10K+", label: "Active Donors" },
-    { icon: Heart, value: "5K+", label: "Lives Saved" },
-    { icon: Shield, value: "100%", label: "Safe & Secure" },
-    { icon: Clock, value: "24/7", label: "Available" },
-  ];
+  const handleNewsletterSubmit = (e: FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+    // Add newsletter subscription logic here
+    console.log("Newsletter subscription submitted");
+  };
 
   return (
     <footer className="bg-white border-t-2 border-black/20">
@@ -110,10 +100,7 @@ export default function Footer() {
                     aria-label={social.label}
                     className="bg-gray-100 border border-gray-300 p-2 md:p-2.5 hover:bg-black hover:text-white hover:border-black transition-colors cursor-pointer"
                   >
-                    <IconComponent
-                      size={16}
-                      className="md:w-[18px] md:h-[18px]"
-                    />
+                    <IconComponent size={16} className="md:w-4.5 md:h-4.5" />
                   </a>
                 );
               })}
@@ -258,17 +245,24 @@ export default function Footer() {
                 Subscribe to get urgent blood request notifications
               </p>
             </div>
-            <div className="flex w-full md:w-auto gap-2">
+            <form
+              onSubmit={handleNewsletterSubmit}
+              className="flex w-full md:w-auto gap-2"
+            >
               <input
                 type="email"
                 placeholder="Enter your email"
+                required
                 className="flex-1 md:w-64 h-11 md:h-12 px-3 md:px-4 bg-white border border-gray-300 text-black text-sm placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all rounded-none"
               />
-              <button className="bg-red-600 text-white px-4 md:px-6 h-11 md:h-12 font-bold uppercase text-xs md:text-sm hover:bg-black transition-colors cursor-pointer flex items-center gap-2 whitespace-nowrap">
+              <button
+                type="submit"
+                className="bg-red-600 text-white px-4 md:px-6 h-11 md:h-12 font-bold uppercase text-xs md:text-sm hover:bg-black transition-colors cursor-pointer flex items-center gap-2 whitespace-nowrap"
+              >
                 <span className="hidden sm:inline">Subscribe</span>
                 <ArrowRight size={16} className="md:w-5 md:h-5" />
               </button>
-            </div>
+            </form>
           </div>
         </motion.div>
       </div>
@@ -279,7 +273,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
             <p className="text-xs md:text-sm text-center md:text-left">
               © {currentYear} <span className="font-bold">BloodLink BD</span>.
-              All rights reserved. Built with for humanity.
+              All rights reserved. Built with ❤️ for humanity.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-xs md:text-sm">
               <Link
