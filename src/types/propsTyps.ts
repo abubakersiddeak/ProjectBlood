@@ -1,5 +1,5 @@
 import { ComponentType } from "react";
-import { ChevronDown, LucideIcon } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 import {
   FieldError,
   FieldValues,
@@ -7,6 +7,7 @@ import {
   UseFormRegister,
   RegisterOptions,
 } from "react-hook-form";
+import { Sidebar } from "@/components/ui/sidebar";
 export interface IFormInputProps {
   id: string;
   label: string;
@@ -53,4 +54,15 @@ export interface IFormSelectProps<T extends FieldValues = FieldValues> {
   disabled?: boolean;
   /** Additional CSS classes to apply to the container div */
   className?: string;
+}
+export interface IAppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  sidebarData: {
+    user: {
+      name: string;
+      email: string;
+      avatar: string;
+    };
+    navMain: any[];
+    navSecondary: any[];
+  };
 }

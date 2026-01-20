@@ -79,16 +79,16 @@ export default function Navbar() {
               Home
             </Link>
             <Link
-              href="/donation-requests"
+              href="/allBloodRequest"
               className="text-gray-600 hover:text-red-500 lg:px-3 py-2"
             >
               All Requests
             </Link>
             <Link
-              href="/search"
+              href="/searchDonors"
               className="text-gray-600 hover:text-red-500 lg:px-3 py-2"
             >
-              Search Donors
+              Search Blood Donors
             </Link>
 
             {session?.user ? (
@@ -213,14 +213,14 @@ export default function Navbar() {
               Home
             </Link>
             <Link
-              href="/donation-requests"
+              href="/allBloodRequest"
               className="block px-4 py-2 text-gray-600 hover:bg-gray-50"
               onClick={() => setIsMenuOpen(false)}
             >
-              All Requests
+              All Blood Requests
             </Link>
             <Link
-              href="/search"
+              href="/searchDonors"
               className="block px-4 py-2 text-gray-600 hover:bg-gray-50"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -263,14 +263,7 @@ export default function Navbar() {
                   <LayoutDashboard className="w-4 h-4" />
                   Dashboard
                 </Link>
-                {/* <Link
-                  href="/profile"
-                  className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-50"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <User className="w-4 h-4" />
-                  Profile
-                </Link> */}
+
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
