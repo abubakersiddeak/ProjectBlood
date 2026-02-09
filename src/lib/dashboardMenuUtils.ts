@@ -1,11 +1,17 @@
 import {
-  IconChartBar,
   IconDashboard,
   IconHelp,
   IconListDetails,
   IconSettings,
+  IconUsers,
 } from "@tabler/icons-react";
-import { CirclePlus, DollarSign, Loader } from "lucide-react";
+import {
+  BanknoteArrowDown,
+  Cctv,
+  CirclePlus,
+  DollarSign,
+  Loader,
+} from "lucide-react";
 
 const NAV_DATA = {
   user: {
@@ -14,6 +20,7 @@ const NAV_DATA = {
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
+    // admin dashboard
     {
       title: "Admin Dashboard",
       url: "/dashboard/admin",
@@ -21,10 +28,42 @@ const NAV_DATA = {
       roles: ["ADMIN"],
     },
     {
+      title: "All Users",
+      url: "/dashboard/admin/allUsers",
+      icon: IconUsers,
+      roles: ["ADMIN"],
+    },
+    {
+      title: "All Donation Request",
+      url: "/dashboard/admin/allDonationRequest",
+      icon: Loader,
+      roles: ["ADMIN"],
+    },
+    {
+      title: "Fund Details",
+      url: "/dashboard/admin/fundDetails",
+      icon: BanknoteArrowDown,
+      roles: ["ADMIN"],
+    },
+
+    {
+      title: "All Activities",
+      url: "/dashboard/admin/allActivities",
+      icon: Cctv,
+      roles: ["ADMIN"],
+    },
+    {
+      title: "Create Blood Request",
+      url: "/dashboard/admin/createBloodRequest",
+      icon: CirclePlus,
+      roles: ["ADMIN"],
+    },
+    // Volunteer dashboard
+    {
       title: "Volunteer Panel",
       url: "/dashboard/volunteer",
       icon: IconListDetails,
-      roles: ["VOLUNTEER", "ADMIN"],
+      roles: ["VOLUNTEER"],
     },
     // user dashboard
     {

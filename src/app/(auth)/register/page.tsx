@@ -13,6 +13,7 @@ import { DISTRICT_LIST, getGeoDetails } from "@/lib/geoLocationUtils";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Link from "next/link";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -467,13 +468,19 @@ export default function RegisterPage() {
               {/* Privacy notice */}
               <p className="mt-4 text-xs text-center text-gray-500 px-4">
                 By registering, you agree to our{" "}
-                <a href="#" className="text-red-600 hover:underline">
-                  Terms of Service
-                </a>{" "}
+                <Link
+                  href="/termsAndConditions"
+                  className="text-red-600 hover:underline"
+                >
+                  Terms And Conditions
+                </Link>{" "}
                 and{" "}
-                <a href="#" className="text-red-600 hover:underline">
+                <Link
+                  href="/privacyPolicy"
+                  className="text-red-600 hover:underline"
+                >
                   Privacy Policy
-                </a>
+                </Link>
               </p>
 
               {/* Login Link */}
