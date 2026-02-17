@@ -193,7 +193,7 @@ export default function RegisterPage() {
       };
 
       // Api call
-      const response = await fetch(`/api/registerUsar`, {
+      const response = await fetch(`/api/users/registerUsar`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

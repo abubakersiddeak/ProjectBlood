@@ -8,8 +8,11 @@ import Hero from "@/components/shared/Hero";
 // import Contact from "@/components/shared/Contact";
 // import DonationProcess from "@/components/shared/DonationProcess";
 // import Hero from "@/components/shared/Hero";
-// import ShowDonationReq from "@/components/shared/ShowDonationReq";
-// import WhyDonateBlood from "@/components/shared/WhyDonateBlood";
+import Contact from "@/components/shared/Contact";
+import DonationProcess from "@/components/shared/DonationProcess";
+
+import WhyDonateBlood from "@/components/shared/WhyDonateBlood";
+import AllBloodDonationReqPublic from "@/components/shared/AllBloodDonationReqPublic";
 
 /**
  * If you have a User interface, you should import it here.
@@ -28,12 +31,11 @@ export default function Home(): React.JSX.Element {
   return (
     <main className="relative min-h-screen bg-white">
       <Navbar />
-      <Navbar />
       <Hero />
-      {/* <ShowDonationReq /> */}
-      {/* <WhyDonateBlood /> */}
-      {/* <DonationProcess /> */}
-      {/* <Contact /> */}
+      <AllBloodDonationReqPublic />
+      <WhyDonateBlood />
+      <DonationProcess />
+      <Contact />
       <Footer />
     </main>
   );

@@ -74,7 +74,7 @@ const createColumns = (
           alt="Avatar"
           height={50}
           width={50}
-          className="w-10 h-10 object-cover border"
+          className="w-8 h-8  object-cover border"
         />
       ),
     },
@@ -84,7 +84,10 @@ const createColumns = (
     },
     {
       accessorKey: "userId",
-      header: "User ID",
+      header: () => <span className="">User ID</span>,
+      cell: ({ row }) => (
+        <span className="text-gray-500">{row.getValue("userId")}</span>
+      ),
     },
     {
       accessorKey: "email",
@@ -93,6 +96,9 @@ const createColumns = (
     {
       accessorKey: "phone",
       header: "Phone",
+      cell: ({ row }) => (
+        <span className="text-gray-500">{row.getValue("phone")}</span>
+      ),
     },
     {
       accessorKey: "role",
@@ -615,7 +621,7 @@ export function DataTable() {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className={`cursor-pointer hover:bg-slate-50 ${
+                  className={`cursor-pointer hover:bg-slate-50  ${
                     isUpdating ? "opacity-50" : ""
                   }`}
                 >

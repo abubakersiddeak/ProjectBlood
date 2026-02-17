@@ -9,10 +9,10 @@ interface GeoDataNode {
 
 // 1. Extract the tables safely
 const districtsTable = geoData.find(
-  (node) => node.type === "table" && node.name === "districts"
+  (node) => node.type === "table" && node.name === "districts",
 ) as GeoDataNode;
 const upazilasTable = geoData.find(
-  (node) => node.type === "table" && node.name === "upazilas"
+  (node) => node.type === "table" && node.name === "upazilas",
 ) as GeoDataNode;
 
 const districts = districtsTable?.data || [];
@@ -39,10 +39,10 @@ export const getGeoDetails = (districtName?: string, upazilaName?: string) => {
     .map((u: any) => u.name)
     .sort();
 
-  // 🔥 If upazila selected → use upazila coordinates
+  //  If upazila selected → use upazila coordinates
   if (upazilaName) {
     const upazila = upazilas.find(
-      (u: any) => u.district_id === district.id && u.name === upazilaName
+      (u: any) => u.district_id === district.id && u.name === upazilaName,
     );
 
     if (upazila?.lat && upazila?.lng) {

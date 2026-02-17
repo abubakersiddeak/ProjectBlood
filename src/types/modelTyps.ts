@@ -66,7 +66,7 @@ export interface IPotentialDonor {
 }
 
 export interface IBloodDonationRequest extends Document {
-  requesterId: Types.ObjectId;
+  requesterId: Types.ObjectId | IUserModel;
   recipientName: string;
   bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
   totalUnitsNeeded: number;
