@@ -1,102 +1,115 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
+"use client";
 
-import { Badge } from "@/components/ui/badge";
 import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  IconUsers,
+  IconShieldCheck,
+  IconHeart,
+  IconDroplet,
+} from "@tabler/icons-react";
+import { Gpu } from "lucide-react";
+import { useEffect, useState } from "react";
+
+interface SummaryData {
+  totalUsers: number;
+  totalAdmins: number;
+  totalVolunteer: number;
+  totalPending: number;
+  totalInProgress: number;
+  totalComplite: number;
+}
+
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+}
+
+function StatCard({ title, value, icon }: StatCardProps) {
+  return (
+    <div className="bg-white border border-gray-200 p-4 hover:shadow-lg transition-shadow">
+      <p className="text-sm text-gray-600 font-medium mb-1 text-center">
+        {title}
+      </p>
+      <div className="flex items-center justify-center gap-4 ">
+        <div className="p-2  rounded">{icon}</div>
+        <p className="text-3xl font-bold text-gray-900">
+          {value.toLocaleString()}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export function SectionCards() {
+  const [summaryData, setData] = useState<SummaryData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const res = await fetch("/api/summary");
+        const json = await res.json();
+        if (json.success) {
+          setData(json.data);
+        }
+      } catch (error) {
+        console.error("Dashboard fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSummary();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
+  }
+  console.log(summaryData);
+  const cards = [
+    {
+      title: "Total Users",
+      value: summaryData?.totalUsers || 0,
+      icon: <IconUsers className="w-6 h-6 text-gray-700" />,
+    },
+    {
+      title: "Total Admins",
+      value: summaryData?.totalAdmins || 0,
+      icon: <IconShieldCheck className="w-6 h-6 text-gray-700" />,
+    },
+    {
+      title: "Total Volunteers",
+      value: summaryData?.totalVolunteer || 0,
+      icon: <IconHeart className="w-6 h-6 text-gray-700" />,
+    },
+    {
+      title: "Lives Saved",
+      value: summaryData?.totalComplite || 0,
+      icon: <IconDroplet className="w-6 h-6 text-red-600" />,
+    },
+    {
+      title: "Pending Req",
+      value: summaryData?.totalPending || 0,
+      icon: <Gpu className="w-6 h-6 text-red-600" />,
+    },
+  ];
+
   return (
-    <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      <Card className="@container/card ">
-        <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Visitors for the last 6 months
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>New Customers</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,234
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingDown />
-              -20%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period <IconTrendingDown className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Acquisition needs attention
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +4.5%
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance increase <IconTrendingUp className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
-        </CardFooter>
-      </Card>
+    <div className="px-1 lg:px-6">
+      <div className="grid grid-cols-3 md:grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {cards.map((card) => (
+          <StatCard
+            key={card.title}
+            title={card.title}
+            value={card.value}
+            icon={card.icon}
+          />
+        ))}
+      </div>
     </div>
   );
 }

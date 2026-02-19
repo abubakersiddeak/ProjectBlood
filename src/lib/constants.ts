@@ -26,3 +26,17 @@ export const URGENCY_LEVELS = [
   { value: "Urgent", label: "জরুরি" },
   { value: "Emergency", label: "অতি জরুরি" },
 ];
+export const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];

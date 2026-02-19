@@ -65,6 +65,19 @@ const NAV_DATA = {
       icon: IconListDetails,
       roles: ["VOLUNTEER"],
     },
+    {
+      title: "All Users",
+      url: "/dashboard/volunteer/allUsers",
+      icon: IconUsers,
+      roles: ["VOLUNTEER"],
+    },
+    {
+      title: "All Donation Request",
+      url: "/dashboard/volunteer/allDonationRequest",
+      icon: Loader,
+      roles: ["VOLUNTEER"],
+    },
+
     // user dashboard
     {
       title: "User Dashboard",

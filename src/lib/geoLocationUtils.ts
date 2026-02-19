@@ -15,13 +15,27 @@ const upazilasTable = geoData.find(
   (node) => node.type === "table" && node.name === "upazilas",
 ) as GeoDataNode;
 
-const districts = districtsTable?.data || [];
-const upazilas = upazilasTable?.data || [];
+export const districts = districtsTable?.data || [];
+export const upazilas = upazilasTable?.data || [];
 
-// 2. Export list for the District Dropdown
+// Export list for the District Dropdown
 export const DISTRICT_LIST = districts.map((d: any) => d.name).sort();
+// give all upazila under distict
+export const getUpazilasByDistrict = (districtName: string): string[] => {
+  if (!districtName) return [];
 
-// 3. Logic to get Upazilas and Point Coordinates
+  const district = districts.find((d: any) => d.name === districtName);
+  if (!district) return [];
+
+  const districtUpazilas = upazilas
+    .filter((u: any) => u.district_id === district.id)
+    .map((u: any) => u.name)
+    .sort();
+
+  return districtUpazilas;
+};
+
+//  Logic to get Upazilas and Point Coordinates
 export const getGeoDetails = (districtName?: string, upazilaName?: string) => {
   if (!districtName) {
     return { upazilas: [], coordinates: [] };

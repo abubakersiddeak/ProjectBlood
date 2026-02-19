@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { BLOOD_GROUPS } from "../../lib/constants";
+import { BLOOD_GROUPS, months } from "../../lib/constants";
 import {
   MapPin,
   Calendar,
@@ -161,20 +161,6 @@ export default function AllBloodDonationReqPublic() {
       const date = new Date(dateInput);
       if (isNaN(date.getTime())) return "Invalid Date";
 
-      const months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
       return `${date.getDate()} ${months[date.getMonth()]}`;
     } catch {
       return "Invalid Date";
@@ -200,7 +186,7 @@ export default function AllBloodDonationReqPublic() {
   // Pagination range calculator
   const paginationRange = useMemo(() => {
     const range: (number | string)[] = [];
-    const maxVisible = 5;
+    const maxVisible = 8;
 
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
@@ -587,7 +573,7 @@ function MinimalCard({
           <div className="flex items-start gap-2 sm:gap-3">
             <Building2 size={14} className="mt-0.5 text-gray-400 shrink-0" />
             <span className="text-xs sm:text-sm text-gray-800 line-clamp-2">
-              {request.hospitalName}
+              {request.hospitalName.toLocaleUpperCase()}
             </span>
           </div>
           <div className="flex items-start gap-2 sm:gap-3">
