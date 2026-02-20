@@ -24,6 +24,8 @@ interface Donor {
   email?: string;
   address?: string;
   lastDonation?: string | Date;
+  avatar: string;
+  totalDonation: number;
 }
 
 export default function SearchPage() {

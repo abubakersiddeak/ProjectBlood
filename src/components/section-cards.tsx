@@ -1,13 +1,16 @@
 "use client";
-
+import { useSession } from "next-auth/react";
 import {
   IconUsers,
   IconShieldCheck,
   IconHeart,
   IconDroplet,
+  IconCalendar,
+  IconAward,
 } from "@tabler/icons-react";
 import { Gpu } from "lucide-react";
 import { useEffect, useState } from "react";
+import SummarySkeleton from "./skeletons/SummarySkeleton";
 
 interface SummaryData {
   totalUsers: number;
@@ -43,7 +46,8 @@ function StatCard({ title, value, icon }: StatCardProps) {
 export function SectionCards() {
   const [summaryData, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const { data: session } = useSession();
+  const userRole = session?.user?.role || "user";
   useEffect(() => {
     const fetchSummary = async () => {
       try {
@@ -63,11 +67,7 @@ export function SectionCards() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <p className="text-gray-500">Loading...</p>
-      </div>
-    );
+    return <SummarySkeleton />;
   }
   console.log(summaryData);
   const cards = [
@@ -75,33 +75,38 @@ export function SectionCards() {
       title: "Total Users",
       value: summaryData?.totalUsers || 0,
       icon: <IconUsers className="w-6 h-6 text-gray-700" />,
+      roles: ["admin", "volunteer"],
     },
     {
       title: "Total Admins",
       value: summaryData?.totalAdmins || 0,
       icon: <IconShieldCheck className="w-6 h-6 text-gray-700" />,
+      roles: ["admin"],
     },
     {
       title: "Total Volunteers",
       value: summaryData?.totalVolunteer || 0,
       icon: <IconHeart className="w-6 h-6 text-gray-700" />,
+      roles: ["admin", "volunteer"],
     },
     {
       title: "Lives Saved",
       value: summaryData?.totalComplite || 0,
       icon: <IconDroplet className="w-6 h-6 text-red-600" />,
+      roles: ["admin", "volunteer"],
     },
     {
       title: "Pending Req",
       value: summaryData?.totalPending || 0,
       icon: <Gpu className="w-6 h-6 text-red-600" />,
+      roles: ["admin", "volunteer"],
     },
   ];
-
+  const visibleCards = cards.filter((card) => card.roles.includes(userRole));
   return (
     <div className="px-1 lg:px-6">
       <div className="grid grid-cols-3 md:grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {cards.map((card) => (
+        {visibleCards.map((card) => (
           <StatCard
             key={card.title}
             title={card.title}

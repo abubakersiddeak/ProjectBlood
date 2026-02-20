@@ -9,7 +9,7 @@ type UserRole = "admin" | "volunteer" | "user";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     // Check authentication

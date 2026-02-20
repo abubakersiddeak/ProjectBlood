@@ -28,3 +28,29 @@ export interface FIBloodDonationRequest {
   updatedAt: Date;
   _id: string;
 }
+export interface FIUser {
+  _id: string;
+  userId: number;
+  fullName: string;
+  email: string;
+  role: "user" | "admin" | "volunteer";
+  status: "active" | "blocked" | "pending" | "inactive";
+  avatar: string;
+  bloodGroup: string;
+  phone?: string;
+  isAvailable?: boolean;
+  location?: {
+    address?: {
+      district?: string;
+      upazila?: string;
+    };
+    coordinates?: [number, number];
+    type?: string;
+  };
+  followerCount?: number;
+  following?: any[];
+  blogCount?: number;
+  donationHistory?: any[];
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}

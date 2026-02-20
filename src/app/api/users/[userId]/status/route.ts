@@ -8,7 +8,7 @@ type UserStatus = "active" | "blocked" | "pending" | "inactive";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     // Check authentication

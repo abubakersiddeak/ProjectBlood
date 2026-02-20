@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import { auth } from "@/auth";
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     const session = await auth();

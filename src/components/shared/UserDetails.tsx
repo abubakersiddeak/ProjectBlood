@@ -43,7 +43,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { IUserModel } from "@/types/modelTyps";
+
+import { FIUser } from "@/types/frontendModelInterface";
 
 type UserRole = "admin" | "volunteer" | "user";
 type UserStatus = "active" | "blocked" | "pending" | "inactive";
@@ -51,7 +52,7 @@ type UserStatus = "active" | "blocked" | "pending" | "inactive";
 interface UserDetailsComponentProps {
   userId: string;
   showBackButton?: boolean;
-  onUserUpdate?: (user: IUserModel) => void;
+  onUserUpdate?: (user: FIUser) => void;
   onUserDelete?: () => void;
 }
 
@@ -64,7 +65,7 @@ export function UserDetailsComponent({
   const router = useRouter();
   const { data: session } = useSession();
 
-  const [user, setUser] = useState<IUserModel | null>(null);
+  const [user, setUser] = useState<FIUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);

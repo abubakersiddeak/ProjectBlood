@@ -61,17 +61,6 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error creating blood donation request:", error);
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Validation error",
-          errors: error.errors,
-        },
-        { status: 400 },
-      );
-    }
-
     return NextResponse.json(
       {
         success: false,
