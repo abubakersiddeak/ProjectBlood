@@ -18,7 +18,7 @@ interface SummaryData {
   totalVolunteer: number;
   totalPending: number;
   totalInProgress: number;
-  totalComplite: number;
+  totalSuccess: number;
 }
 
 interface StatCardProps {
@@ -91,7 +91,7 @@ export function SectionCards() {
     },
     {
       title: "Lives Saved",
-      value: summaryData?.totalComplite || 0,
+      value: summaryData?.totalSuccess || 0,
       icon: <IconDroplet className="w-6 h-6 text-red-600" />,
       roles: ["admin", "volunteer"],
     },

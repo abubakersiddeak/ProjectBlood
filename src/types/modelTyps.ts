@@ -105,21 +105,45 @@ export interface IBlog extends Document {
 }
 
 // --- ChatModel Interface ---
-export interface IChat extends Document {
-  participants: mongoose.Types.ObjectId[]; // [Sender, Receiver]
-  lastMessage?: mongoose.Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
+export interface IChat {
+  _id?: Types.ObjectId;
+
+  participants: Types.ObjectId[];
+
+  isGroup: boolean;
+  groupName?: string;
+  groupAdmin?: Types.ObjectId;
+
+  lastMessage?: Types.ObjectId;
+
+  unreadCount: Map<string, number>;
+
+  isArchived: boolean;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // --- MessageModel Interface ---
-export interface IMessage extends Document {
-  chatId: mongoose.Types.ObjectId;
-  senderId: mongoose.Types.ObjectId;
-  text: string;
-  image?: string;
-  isRead: boolean;
-  createdAt: Date;
+export interface IMessage {
+  _id?: Types.ObjectId;
+
+  chatId: Types.ObjectId;
+  senderId: Types.ObjectId;
+
+  type: "text" | "image" | "file" | "audio";
+
+  text?: string;
+  mediaUrl?: string;
+
+  status: "sent" | "delivered" | "read";
+
+  readBy: Types.ObjectId[];
+
+  isDeleted: boolean;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 // --- NotificationModel Interface ---
 export interface INotification extends Document {

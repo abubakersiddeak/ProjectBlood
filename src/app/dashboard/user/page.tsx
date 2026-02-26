@@ -1,6 +1,5 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
 import NotificationBody from "@/components/shared/NotificationBody";
 import {
   IconDroplet,
@@ -12,14 +11,34 @@ import {
   IconTrendingUp,
 } from "@tabler/icons-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
+  const [sData, setSData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!session) {
-    redirect("/login");
-  }
+  useEffect(() => {
+    const fetchSummaryData = async () => {
+      try {
+        const res = await fetch("/api/summary");
+        const data = await res.json();
 
+        if (data.success) {
+          setSData(data.data);
+        } else {
+          console.error(data.message);
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSummaryData();
+  }, []);
+  console.log(sData);
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
