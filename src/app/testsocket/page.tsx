@@ -3,7 +3,7 @@ import React from "react";
 
 export default function page() {
   const receiver = {
-    id: "696ccd539cb1532f13ba1bbf",
+    id: "696b4d35150b964a3bcd9869",
     name: "jisan",
   };
   return (

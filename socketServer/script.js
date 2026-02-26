@@ -6,14 +6,14 @@ import mongoose from "mongoose";
 import connectDB from "./lib/dbConnect.js";
 import { MessageModel } from "./models/message.js";
 import { ChatModel } from "./models/chat.js";
-
+const PORT = process.env.PORT || 3001;
 const app = express();
 const server = http.createServer(app);
 connectDB();
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://project-blood-psi.vercel.app/"],
     credentials: true,
   },
 });
@@ -78,4 +78,4 @@ io.on("connection", (socket) => {
 
 app.get("/", (_req, res) => res.send("Socket.io Chat Server Running"));
 
-server.listen(3001, () => console.log("✅ Chat server running on port 3001"));
+server.listen(PORT, () => console.log("✅ Chat server running on port 3001"));

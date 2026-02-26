@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import io from "socket.io-client";
 
 // Socket instance
-const socket = io("http://localhost:3001");
+const socket = io("https://bloodlinkbdsocketserver-1.onrender.com/");
 
 interface IMessage {
   _id?: string;
