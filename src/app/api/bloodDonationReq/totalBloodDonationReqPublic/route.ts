@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import BloodDonationReqModel from "@/models/BloodDonationReqModel";
+import UserModel from "@/models/UserModel";
 
 export async function GET(req: Request) {
   try {
