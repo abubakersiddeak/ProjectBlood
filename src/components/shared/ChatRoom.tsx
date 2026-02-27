@@ -43,7 +43,7 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
     if (!senderId) return;
 
     // Initialize socket
-    socketRef.current = io("http://localhost:3001", {
+    socketRef.current = io("https://bloodlinkbdsocketserver-1.onrender.com/", {
       transports: ["websocket"],
     });
 
