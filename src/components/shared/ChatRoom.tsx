@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import io, { Socket } from "socket.io-client";
 
 interface IMessage {
@@ -34,10 +34,16 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
   const { data: session } = useSession();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null); // ✅ Fixed: add initial value
-  const socketRef = useRef<typeof Socket | null>(null); // ✅ Fixed: use Socket type directly
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const socketRef = useRef<typeof Socket | null>(null);
+  const chatIdRef = useRef<string>(""); // ✅ Use ref to avoid dependency issue
 
   const senderId = session?.user?.id;
+
+  // ✅ Update ref when chatId changes
+  useEffect(() => {
+    chatIdRef.current = chatId;
+  }, [chatId]);
 
   useEffect(() => {
     if (!senderId) return;
@@ -66,17 +72,41 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
       setIsConnected(false);
     });
 
+    // Receive chatId from server
+    socket.on("chat_joined", (data: { chatId: string }) => {
+      console.log("Joined chat:", data.chatId);
+      setChatId(data.chatId);
+    });
+
+    // Handle new chat request from another user
+    socket.on(
+      "new_chat_request",
+      (data: { chatId: string; fromUser: string }) => {
+        console.log("New chat request from:", data.fromUser);
+        setChatId(data.chatId);
+        socket.emit("accept_chat", {
+          chatId: data.chatId,
+          userId: senderId,
+        });
+      },
+    );
+
     // Receive chat history
     socket.on("chat_history", (history: IMessage[]) => {
+      console.log("Received chat history:", history.length, "messages");
       setMessages(history);
-      const firstMsg = history[0];
-      if (firstMsg && typeof firstMsg.chatId === "string") {
-        setChatId(firstMsg.chatId);
+      if (history.length > 0 && !chatIdRef.current) {
+        // ✅ Use ref
+        const firstMsg = history[0];
+        if (typeof firstMsg.chatId === "string") {
+          setChatId(firstMsg.chatId);
+        }
       }
     });
 
     // Receive new message
     socket.on("receive_message", (msg: IMessage) => {
+      console.log("Received message:", msg);
       setMessages((prev) => {
         const exists = prev.some((m) => m._id === msg._id);
         if (exists) return prev;
@@ -84,7 +114,8 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
       });
 
       // Set chatId if not set
-      if (!chatId && msg.chatId) {
+      if (!chatIdRef.current && msg.chatId) {
+        // ✅ Use ref
         setChatId(msg.chatId);
       }
 
@@ -143,6 +174,8 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
     return () => {
       socket.off("connect");
       socket.off("disconnect");
+      socket.off("chat_joined");
+      socket.off("new_chat_request");
       socket.off("chat_history");
       socket.off("receive_message");
       socket.off("user_typing");
@@ -153,44 +186,56 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [senderId, receiver.id, chatId]); // ✅ Added chatId to dependencies
+  }, [senderId, receiver.id]); // ✅ No chatId dependency
 
   // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleTyping = () => {
-    if (!chatId || !socketRef.current) return;
+  const handleTyping = useCallback(() => {
+    if (!chatIdRef.current || !socketRef.current) return; // ✅ Use ref
 
-    socketRef.current.emit("typing", { chatId, userId: senderId });
+    socketRef.current.emit("typing", {
+      chatId: chatIdRef.current,
+      userId: senderId,
+    });
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
     typingTimeoutRef.current = setTimeout(() => {
-      if (socketRef.current) {
-        socketRef.current.emit("stop_typing", { chatId, userId: senderId });
+      if (socketRef.current && chatIdRef.current) {
+        socketRef.current.emit("stop_typing", {
+          chatId: chatIdRef.current,
+          userId: senderId,
+        });
       }
     }, 1000);
-  };
+  }, [senderId]); // ✅ Only depends on senderId
 
-  const sendMessage = () => {
+  const sendMessage = useCallback(() => {
     if (!message.trim() || !senderId || !socketRef.current) return;
+
+    console.log("Sending message to chatId:", chatIdRef.current); // ✅ Use ref
 
     socketRef.current.emit("send_message", {
       senderId: senderId,
       receiverId: receiver.id,
       text: message,
-      chatId: chatId || undefined,
+      chatId: chatIdRef.current || undefined, // ✅ Use ref
     });
 
     setMessage("");
-    if (chatId && socketRef.current) {
-      socketRef.current.emit("stop_typing", { chatId, userId: senderId });
+    if (chatIdRef.current && socketRef.current) {
+      // ✅ Use ref
+      socketRef.current.emit("stop_typing", {
+        chatId: chatIdRef.current,
+        userId: senderId,
+      });
     }
-  };
+  }, [message, senderId, receiver.id]); // ✅ Proper dependencies
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -219,7 +264,6 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
     }
   };
 
-  // Get sender name
   const getSenderName = (msg: IMessage) => {
     if (typeof msg.senderId === "string") {
       const msgSenderId = msg.senderId;

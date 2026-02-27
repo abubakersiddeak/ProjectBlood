@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import connectDB from "./lib/dbConnect.js";
 import { MessageModel } from "./models/message.js";
 import { ChatModel } from "./models/chat.js";
-import { UserModel } from "./models/user.js"; // ✅ Import User Model
+import { UserModel } from "./models/user.js";
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -20,8 +20,9 @@ const io = new Server(server, {
   },
 });
 
-// Store online users
-const onlineUsers = new Map();
+// Store online users and their rooms
+const onlineUsers = new Map(); // userId -> socketId
+const userRooms = new Map(); // userId -> Set of chatIds
 
 io.on("connection", (socket) => {
   console.log(`✅ User connected: ${socket.id}`);
@@ -30,6 +31,11 @@ io.on("connection", (socket) => {
   socket.on("user_online", (userId) => {
     onlineUsers.set(userId, socket.id);
     socket.userId = userId;
+
+    if (!userRooms.has(userId)) {
+      userRooms.set(userId, new Set());
+    }
+
     io.emit("user_status", { userId, status: "online" });
     console.log(`User ${userId} is online`);
   });
@@ -58,19 +64,70 @@ io.on("connection", (socket) => {
       }
 
       const chatId = chat._id.toString();
+
+      // Join the socket to the room
       socket.join(chatId);
 
-      // Send chat history with user info ✅
+      // Track user's rooms
+      if (!userRooms.has(senderId)) {
+        userRooms.set(senderId, new Set());
+      }
+      userRooms.get(senderId).add(chatId);
+
+      console.log(`✅ User ${senderId} joined chat room: ${chatId}`);
+
+      // Send chatId back to client ✅
+      socket.emit("chat_joined", { chatId });
+
+      // Send chat history with user info
       const messages = await MessageModel.find({ chatId: chat._id })
         .sort({ createdAt: 1 })
         .limit(50)
-        .populate("senderId", "fullName avatar") // ✅ Populate user data
+        .populate("senderId", "fullName avatar")
         .lean();
 
       socket.emit("chat_history", messages);
-      console.log(`User joined chat: ${chatId}`);
+
+      // Notify the other user to join if they're online ✅
+      const receiverSocketId = onlineUsers.get(receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("new_chat_request", {
+          chatId,
+          fromUser: senderId,
+        });
+      }
     } catch (err) {
       console.error("Error joining chat:", err);
+      socket.emit("error", { message: "Failed to join chat" });
+    }
+  });
+
+  // Handle new chat request ✅
+  socket.on("accept_chat", async (data) => {
+    try {
+      const { chatId, userId } = data;
+
+      socket.join(chatId);
+
+      if (!userRooms.has(userId)) {
+        userRooms.set(userId, new Set());
+      }
+      userRooms.get(userId).add(chatId);
+
+      console.log(`✅ User ${userId} accepted and joined chat: ${chatId}`);
+
+      // Send chat history
+      const messages = await MessageModel.find({
+        chatId: new mongoose.Types.ObjectId(chatId),
+      })
+        .sort({ createdAt: 1 })
+        .limit(50)
+        .populate("senderId", "fullName avatar")
+        .lean();
+
+      socket.emit("chat_history", messages);
+    } catch (err) {
+      console.error("Error accepting chat:", err);
     }
   });
 
@@ -105,7 +162,15 @@ io.on("connection", (socket) => {
       }
 
       const roomId = chat._id.toString();
+
+      // Ensure sender is in the room ✅
       socket.join(roomId);
+
+      // Ensure receiver is in the room if online ✅
+      const receiverSocketId = onlineUsers.get(receiverId);
+      if (receiverSocketId) {
+        io.sockets.sockets.get(receiverSocketId)?.join(roomId);
+      }
 
       // Create message
       const newMessage = await MessageModel.create({
@@ -120,22 +185,22 @@ io.on("connection", (socket) => {
       chat.lastMessage = newMessage._id;
       await chat.save();
 
-      // Populate sender info ✅
+      // Populate sender info
       const populatedMessage = await MessageModel.findById(newMessage._id)
-        .populate("senderId", "fullName avatar") // ✅ Get user name and avatar
+        .populate("senderId", "fullName avatar")
         .lean();
 
-      // Emit to room
+      console.log(`📨 Broadcasting message to room ${roomId}`);
+
+      // Emit to the entire room (both users) ✅
       io.to(roomId).emit("receive_message", populatedMessage);
 
-      // Check if receiver is online
-      const receiverSocketId = onlineUsers.get(receiverId);
+      // Check if receiver is online for delivery status
       if (receiverSocketId) {
-        // Mark as delivered
         await MessageModel.findByIdAndUpdate(newMessage._id, {
           status: "delivered",
         });
-        io.to(receiverSocketId).emit("message_delivered", {
+        io.to(roomId).emit("message_delivered", {
           messageId: newMessage._id,
         });
       }
@@ -184,6 +249,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     if (socket.userId) {
       onlineUsers.delete(socket.userId);
+      userRooms.delete(socket.userId);
       io.emit("user_status", { userId: socket.userId, status: "offline" });
       console.log(`❌ User ${socket.userId} disconnected`);
     }
