@@ -20,9 +20,8 @@ const io = new Server(server, {
   },
 });
 
-// Store online users and their rooms
-const onlineUsers = new Map(); // userId -> socketId
-const userRooms = new Map(); // userId -> Set of chatIds
+// Store online users: userId -> socketId
+const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
   console.log(`✅ User connected: ${socket.id}`);
@@ -31,19 +30,15 @@ io.on("connection", (socket) => {
   socket.on("user_online", (userId) => {
     onlineUsers.set(userId, socket.id);
     socket.userId = userId;
-
-    if (!userRooms.has(userId)) {
-      userRooms.set(userId, new Set());
-    }
-
     io.emit("user_status", { userId, status: "online" });
-    console.log(`User ${userId} is online`);
+    console.log(`✅ User ${userId} is online (Socket: ${socket.id})`);
   });
 
   // Join chat room
   socket.on("join_chat", async (data) => {
     try {
       const { senderId, receiverId } = data;
+      console.log(`🔵 join_chat requested by ${senderId} with ${receiverId}`);
 
       let chat = await ChatModel.findOne({
         participants: {
@@ -61,25 +56,21 @@ io.on("connection", (socket) => {
             new mongoose.Types.ObjectId(receiverId),
           ],
         });
+        console.log(`🆕 New chat created: ${chat._id}`);
       }
 
       const chatId = chat._id.toString();
 
       // Join the socket to the room
       socket.join(chatId);
+      console.log(
+        `✅ Socket ${socket.id} (User: ${senderId}) joined room: ${chatId}`,
+      );
 
-      // Track user's rooms
-      if (!userRooms.has(senderId)) {
-        userRooms.set(senderId, new Set());
-      }
-      userRooms.get(senderId).add(chatId);
-
-      console.log(`✅ User ${senderId} joined chat room: ${chatId}`);
-
-      // Send chatId back to client ✅
+      // Send chatId back to client
       socket.emit("chat_joined", { chatId });
 
-      // Send chat history with user info
+      // Send chat history
       const messages = await MessageModel.find({ chatId: chat._id })
         .sort({ createdAt: 1 })
         .limit(50)
@@ -87,34 +78,37 @@ io.on("connection", (socket) => {
         .lean();
 
       socket.emit("chat_history", messages);
+      console.log(`📜 Sent ${messages.length} messages to ${senderId}`);
 
-      // Notify the other user to join if they're online ✅
+      // If receiver is online, make them join too
       const receiverSocketId = onlineUsers.get(receiverId);
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit("new_chat_request", {
-          chatId,
-          fromUser: senderId,
-        });
+        const receiverSocket = io.sockets.sockets.get(receiverSocketId);
+        if (receiverSocket) {
+          receiverSocket.join(chatId);
+          console.log(
+            `✅ Auto-joined receiver socket ${receiverSocketId} (User: ${receiverId}) to room: ${chatId}`,
+          );
+
+          // Notify receiver
+          receiverSocket.emit("chat_joined", { chatId });
+          receiverSocket.emit("chat_history", messages);
+        }
       }
     } catch (err) {
-      console.error("Error joining chat:", err);
+      console.error("❌ Error joining chat:", err);
       socket.emit("error", { message: "Failed to join chat" });
     }
   });
 
-  // Handle new chat request ✅
+  // Handle new chat request
   socket.on("accept_chat", async (data) => {
     try {
       const { chatId, userId } = data;
+      console.log(`✅ User ${userId} accepting chat: ${chatId}`);
 
       socket.join(chatId);
-
-      if (!userRooms.has(userId)) {
-        userRooms.set(userId, new Set());
-      }
-      userRooms.get(userId).add(chatId);
-
-      console.log(`✅ User ${userId} accepted and joined chat: ${chatId}`);
+      console.log(`✅ Socket ${socket.id} joined room: ${chatId}`);
 
       // Send chat history
       const messages = await MessageModel.find({
@@ -127,7 +121,7 @@ io.on("connection", (socket) => {
 
       socket.emit("chat_history", messages);
     } catch (err) {
-      console.error("Error accepting chat:", err);
+      console.error("❌ Error accepting chat:", err);
     }
   });
 
@@ -135,8 +129,14 @@ io.on("connection", (socket) => {
   socket.on("send_message", async (data) => {
     try {
       const { senderId, receiverId, text, chatId } = data;
+      console.log(
+        `📨 send_message from ${senderId} to ${receiverId}, chatId: ${chatId}`,
+      );
 
-      if (!text?.trim()) return;
+      if (!text?.trim()) {
+        console.log("❌ Empty message, ignoring");
+        return;
+      }
 
       let chat;
       if (chatId) {
@@ -159,17 +159,25 @@ io.on("connection", (socket) => {
             new mongoose.Types.ObjectId(receiverId),
           ],
         });
+        console.log(`🆕 Created new chat: ${chat._id}`);
       }
 
       const roomId = chat._id.toString();
 
-      // Ensure sender is in the room ✅
+      // IMPORTANT: Make sure sender is in the room
       socket.join(roomId);
+      console.log(`✅ Sender socket ${socket.id} joined room: ${roomId}`);
 
-      // Ensure receiver is in the room if online ✅
+      // IMPORTANT: Make sure receiver is in the room if online
       const receiverSocketId = onlineUsers.get(receiverId);
       if (receiverSocketId) {
-        io.sockets.sockets.get(receiverSocketId)?.join(roomId);
+        const receiverSocket = io.sockets.sockets.get(receiverSocketId);
+        if (receiverSocket) {
+          receiverSocket.join(roomId);
+          console.log(
+            `✅ Receiver socket ${receiverSocketId} joined room: ${roomId}`,
+          );
+        }
       }
 
       // Create message
@@ -190,10 +198,16 @@ io.on("connection", (socket) => {
         .populate("senderId", "fullName avatar")
         .lean();
 
-      console.log(`📨 Broadcasting message to room ${roomId}`);
+      // Get all sockets in the room
+      const socketsInRoom = await io.in(roomId).fetchSockets();
+      console.log(
+        `📢 Broadcasting to room ${roomId}, sockets in room: ${socketsInRoom.length}`,
+      );
+      socketsInRoom.forEach((s) => console.log(`   - Socket: ${s.id}`));
 
-      // Emit to the entire room (both users) ✅
+      // Emit to the entire room
       io.to(roomId).emit("receive_message", populatedMessage);
+      console.log(`✅ Message broadcasted to room ${roomId}`);
 
       // Check if receiver is online for delivery status
       if (receiverSocketId) {
@@ -203,12 +217,13 @@ io.on("connection", (socket) => {
         io.to(roomId).emit("message_delivered", {
           messageId: newMessage._id,
         });
+        console.log(`✅ Message marked as delivered`);
       }
 
       // Emit typing stopped
       socket.to(roomId).emit("user_stopped_typing", { userId: senderId });
     } catch (err) {
-      console.error("Error sending message:", err);
+      console.error("❌ Error sending message:", err);
       socket.emit("message_error", { error: "Failed to send message" });
     }
   });
@@ -216,11 +231,13 @@ io.on("connection", (socket) => {
   // Typing indicator
   socket.on("typing", (data) => {
     const { chatId, userId } = data;
+    console.log(`⌨️  User ${userId} typing in ${chatId}`);
     socket.to(chatId).emit("user_typing", { userId });
   });
 
   socket.on("stop_typing", (data) => {
     const { chatId, userId } = data;
+    console.log(`⌨️  User ${userId} stopped typing in ${chatId}`);
     socket.to(chatId).emit("user_stopped_typing", { userId });
   });
 
@@ -239,9 +256,10 @@ io.on("connection", (socket) => {
           messageId,
           userId,
         });
+        console.log(`✅ Message ${messageId} marked as read by ${userId}`);
       }
     } catch (err) {
-      console.error("Error marking message as read:", err);
+      console.error("❌ Error marking message as read:", err);
     }
   });
 
@@ -249,9 +267,12 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     if (socket.userId) {
       onlineUsers.delete(socket.userId);
-      userRooms.delete(socket.userId);
       io.emit("user_status", { userId: socket.userId, status: "offline" });
-      console.log(`❌ User ${socket.userId} disconnected`);
+      console.log(
+        `❌ User ${socket.userId} (Socket: ${socket.id}) disconnected`,
+      );
+    } else {
+      console.log(`❌ Socket ${socket.id} disconnected`);
     }
   });
 });

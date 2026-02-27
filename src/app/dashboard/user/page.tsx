@@ -5,13 +5,16 @@ import {
   IconDroplet,
   IconHeart,
   IconCalendar,
-  IconAward,
   IconMapPin,
-  IconPhone,
+  IconChevronRight,
+  IconAlertCircle,
+  IconTarget,
+  IconStar,
   IconTrendingUp,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { UserLandingPageSkliton } from "@/components/skeletons/UserLandingPageSkliton";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -23,11 +26,8 @@ export default function DashboardPage() {
       try {
         const res = await fetch("/api/summary");
         const data = await res.json();
-
         if (data.success) {
           setSData(data.data);
-        } else {
-          console.error(data.message);
         }
       } catch (error) {
         console.error("Fetch error:", error);
@@ -35,345 +35,414 @@ export default function DashboardPage() {
         setLoading(false);
       }
     };
-
     fetchSummaryData();
   }, []);
-  console.log(sData);
+
+  if (loading) {
+    return <UserLandingPageSkliton />;
+  }
+
+  // Extract data from API response
+  const userData = sData?.user || {};
+  const donations = sData?.donations || {};
+  const requests = sData?.requests || {};
+  const level = sData?.level || {};
+  const rating = sData?.rating || {};
+  const opportunities = sData?.opportunities || {};
+  const badges = sData?.badges || [];
+  const recentDonations = sData?.recentDonations || [];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       {/* Main Content */}
-      <div className=" mx-auto px-4 py-8 lg:px-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 mb-8">
-          <div className="bg-white border border-gray-200 p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-red-50 rounded-lg">
-                <IconDroplet className="w-6 h-6 text-red-600" />
-              </div>
-              <IconTrendingUp className="w-5 h-5 text-green-500" />
+      <div className="mx-auto px-4 py-6 space-y-6 pb-24 ">
+        {/* Impact Summary */}
+        <div className="bg-white  p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Your Impact</p>
+              <h2 className="text-4xl font-bold text-gray-900">
+                {donations.livesSaved || 0}
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">lives saved</p>
+              {donations.thisYear > 0 && (
+                <div className="flex items-center gap-1 mt-2">
+                  <IconTrendingUp className="w-4 h-4 text-green-500" />
+                  <span className="text-xs font-semibold text-green-600">
+                    {donations.thisYear} donations this year
+                  </span>
+                </div>
+              )}
             </div>
-            <p className="text-sm text-gray-600 font-medium mb-1">
-              Total Donations
-            </p>
-            <p className="text-3xl font-bold text-gray-900">12 Times</p>
-            <p className="text-xs text-green-600 mt-2">+2 this month</p>
+            <div className="w-16 h-16  flex items-center justify-center">
+              <IconHeart className="w-8 h-8 text-red-500" />
+            </div>
           </div>
 
-          <div className="bg-white border border-gray-200 p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <IconCalendar className="w-6 h-6 text-blue-600" />
-              </div>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+            <div>
+              <p className="text-2xl font-bold text-gray-900">
+                {donations.total || 0}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">Total Donations</p>
+              {donations.verified > 0 && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✓ {donations.verified} verified
+                </p>
+              )}
             </div>
-            <p className="text-sm text-gray-600 font-medium mb-1">
-              Next Donation
-            </p>
-            <p className="text-xl font-bold text-gray-900">In 45 days</p>
-            <p className="text-xs text-gray-500 mt-2">Jan 15, 2025</p>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">
+                {userData.bloodGroup || "N/A"}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">Blood Type</p>
+              {userData.isAvailable && (
+                <p className="text-xs text-green-600 mt-1">✓ Available</p>
+              )}
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">
+                {donations.canDonateNow ? (
+                  <span className="text-green-600">Ready</span>
+                ) : (
+                  `${donations.daysUntilEligible}d`
+                )}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {donations.canDonateNow ? "Can Donate" : "Next Eligible"}
+              </p>
+              {!donations.canDonateNow && donations.nextEligibleDate && (
+                <p className="text-xs text-gray-400 mt-1">
+                  {new Date(donations.nextEligibleDate).toLocaleDateString()}
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="bg-white border border-gray-200 p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-yellow-50 rounded-lg">
-                <IconAward className="w-6 h-6 text-yellow-600" />
+          {/* Rating */}
+          {rating.totalRatings > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-2">
+                <IconStar className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                <span className="font-bold text-gray-900">
+                  {rating.average}
+                </span>
+                <span className="text-sm text-gray-500">
+                  ({rating.totalRatings} ratings)
+                </span>
               </div>
             </div>
-            <p className="text-sm text-gray-600 font-medium mb-1">
-              Donor Level
-            </p>
-            <p className="text-xl font-bold text-gray-900">Gold Donor</p>
-            <p className="text-xs text-gray-500 mt-2">3 more to Platinum</p>
-          </div>
-          {/* Notifications */}
-          <div className="bg-white border rounded-lg col-span-2">
-            <div className="px-4 py-3 border-b">
-              <h3 className="font-bold text-gray-900">Notifications</h3>
-            </div>
-            <NotificationBody />
-          </div>
+          )}
         </div>
 
-        {/* Alert Banner */}
-        {/* <div className="bg-red-50 border-l-4 border-red-600 p-4 mb-8">
-          <div className="flex items-start gap-3">
-            <IconAlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-bold text-red-900 mb-1">
-                Urgent Blood Needed!
-              </h3>
-              <p className="text-sm text-red-800">
-                A+ blood type needed at City Hospital.{" "}
-                <Link href="/requests" className="underline font-semibold">
-                  View Details →
+        {/* Opportunities Alert */}
+        {opportunities.matchingBloodRequests > 0 && (
+          <div className="bg-red-50  p-4 border border-red-100">
+            <div className="flex gap-3">
+              <div className="shrink-0">
+                <div className="w-10 h-10 bg-red-500  flex items-center justify-center">
+                  <IconAlertCircle className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-semibold text-red-700">
+                    {opportunities.matchingBloodRequests} MATCHING REQUESTS
+                  </span>
+                  {opportunities.nearbyRequests > 0 && (
+                    <>
+                      <span className="text-xs text-gray-500">•</span>
+                      <span className="text-xs text-gray-600">
+                        {opportunities.nearbyRequests} nearby
+                      </span>
+                    </>
+                  )}
+                </div>
+                <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                  {userData.bloodGroup} Blood Needed
+                </h3>
+                <p className="text-xs text-gray-600 mb-3">
+                  People are looking for your blood type
+                </p>
+                <Link
+                  href="/requests"
+                  className="inline-flex items-center text-sm font-semibold text-red-600 hover:text-red-700"
+                >
+                  View Requests
+                  <IconChevronRight className="w-4 h-4 ml-1" />
                 </Link>
-              </p>
+              </div>
             </div>
           </div>
-        </div> */}
+        )}
 
         {/* Quick Actions */}
-        {/* <div className="bg-white border rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">
-            Quick Actions
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Link
-              href="/requests"
-              className="flex flex-col items-center justify-center p-6 border-2 border-gray-200 hover:border-red-600 hover:bg-red-50 transition-all group"
-            >
-              <div className="p-3 bg-red-100 rounded-full group-hover:bg-red-600 transition-colors mb-3">
-                <IconUsers className="w-6 h-6 text-red-600 group-hover:text-white" />
-              </div>
-              <span className="text-sm font-semibold text-gray-900">
-                Blood Requests
-              </span>
-              <span className="text-xs text-gray-500 mt-1">12 active</span>
-            </Link>
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            href="/searchDonors"
+            className="bg-white  p-5 border border-gray-100 hover:border-gray-200 transition-colors group"
+          >
+            <div className="w-10 h-10 bg-blue-50  flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
+              <IconTarget className="w-5 h-5 text-blue-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 text-sm mb-1">
+              Find Donors
+            </h3>
+            <p className="text-xs text-gray-500">Search nearby</p>
+          </Link>
 
-            <Link
-              href="/search"
-              className="flex flex-col items-center justify-center p-6 border-2 border-gray-200 hover:border-blue-600 hover:bg-blue-50 transition-all group"
-            >
-              <div className="p-3 bg-blue-100 rounded-full group-hover:bg-blue-600 transition-colors mb-3">
-                <IconSearch className="w-6 h-6 text-blue-600 group-hover:text-white" />
-              </div>
-              <span className="text-sm font-semibold text-gray-900">
-                Find Donors
-              </span>
-              <span className="text-xs text-gray-500 mt-1">Search now</span>
-            </Link>
+          <Link
+            href="/allBloodRequest"
+            className="bg-white  p-5 border border-gray-100 hover:border-gray-200 transition-colors group"
+          >
+            <div className="w-10 h-10 bg-red-50  flex items-center justify-center mb-3 group-hover:bg-red-100 transition-colors">
+              <IconDroplet className="w-5 h-5 text-red-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 text-sm mb-1">
+              Requests
+            </h3>
+            <p className="text-xs text-gray-500">
+              {requests.active > 0 ? `${requests.active} active` : "View all"}
+            </p>
+          </Link>
 
-            <Link
-              href="/history"
-              className="flex flex-col items-center justify-center p-6 border-2 border-gray-200 hover:border-green-600 hover:bg-green-50 transition-all group"
-            >
-              <div className="p-3 bg-green-100 rounded-full group-hover:bg-green-600 transition-colors mb-3">
-                <IconHistory className="w-6 h-6 text-green-600 group-hover:text-white" />
-              </div>
-              <span className="text-sm font-semibold text-gray-900">
-                My History
-              </span>
-              <span className="text-xs text-gray-500 mt-1">View all</span>
-            </Link>
+          <Link
+            href="#"
+            className="bg-white  p-5 border border-gray-100 hover:border-gray-200 transition-colors group"
+          >
+            <div className="w-10 h-10 bg-purple-50  flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
+              <IconCalendar className="w-5 h-5 text-purple-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 text-sm mb-1">
+              My History
+            </h3>
+            <p className="text-xs text-gray-500">
+              {donations.total > 0
+                ? `${donations.total} donations`
+                : "View all"}
+            </p>
+          </Link>
 
-            <Link
-              href="/centers"
-              className="flex flex-col items-center justify-center p-6 border-2 border-gray-200 hover:border-purple-600 hover:bg-purple-50 transition-all group"
-            >
-              <div className="p-3 bg-purple-100 rounded-full group-hover:bg-purple-600 transition-colors mb-3">
-                <IconMapPin className="w-6 h-6 text-purple-600 group-hover:text-white" />
-              </div>
-              <span className="text-sm font-semibold text-gray-900">
-                Blood Centers
-              </span>
-              <span className="text-xs text-gray-500 mt-1">Find nearby</span>
-            </Link>
+          <Link
+            href="/dashboard/user/myBloodRequest"
+            className="bg-white  p-5 border border-gray-100 hover:border-gray-200 transition-colors group"
+          >
+            <div className="w-10 h-10 bg-green-50  flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
+              <IconMapPin className="w-5 h-5 text-green-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 text-sm mb-1">
+              My Requests
+            </h3>
+            <p className="text-xs text-gray-500">
+              {requests.totalCreated > 0
+                ? `${requests.totalCreated} created`
+                : "Create new"}
+            </p>
+          </Link>
+        </div>
+
+        {/* Recent Donations */}
+        {recentDonations.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-gray-900">
+                Recent Donations
+              </h2>
+              <Link
+                href="/history"
+                className="text-sm text-gray-500 hover:text-gray-900"
+              >
+                See all
+              </Link>
+            </div>
+
+            <div className="space-y-3">
+              {recentDonations
+                .slice(0, 3)
+                .map((donation: any, index: number) => (
+                  <div
+                    key={donation._id || index}
+                    className="bg-white  p-4 border border-gray-100"
+                  >
+                    <div className="flex gap-3">
+                      <div className="shrink-0">
+                        <div className="w-12 h-12 bg-green-50  flex items-center justify-center">
+                          <span className="text-green-600 font-bold text-sm">
+                            {donation.bloodGroup}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div>
+                            <h4 className="font-semibold text-gray-900 text-sm mb-1">
+                              {donation.hospitalName}
+                            </h4>
+                            {donation.requesterId?.fullName && (
+                              <p className="text-xs text-gray-500">
+                                For: {donation.requesterId.fullName}
+                              </p>
+                            )}
+                          </div>
+                          {donation.isVerified && (
+                            <span className="bg-green-50 text-green-600 text-xs font-semibold px-2 py-1 ">
+                              ✓ Verified
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <IconCalendar className="w-3.5 h-3.5" />
+                            <span>
+                              {new Date(
+                                donation.donationDate,
+                              ).toLocaleDateString()}
+                            </span>
+                          </div>
+                          {donation.rating && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <IconStar className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                              <span>{donation.rating}/5</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {donation.reviewMessage && (
+                          <p className="text-xs text-gray-600 italic">
+                            {donation.reviewMessage}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
-        </div> */}
+        )}
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Upcoming Donations & Recent Activity */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Upcoming Donations */}
-            <div className="bg-white border rounded-lg">
-              <div className="px-6 py-4 border-b flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900">
-                  Upcoming Donations
-                </h3>
-                <Link
-                  href="/schedule"
-                  className="text-sm text-red-600 hover:text-red-700 font-semibold"
+        {/* Request Statistics */}
+        {requests.totalCreated > 0 && (
+          <div className="bg-white  p-5 border border-gray-100">
+            <h3 className="font-semibold text-gray-900 mb-4">
+              Your Requests Summary
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-2xl font-bold text-gray-900">
+                  {requests.totalCreated}
+                </p>
+                <p className="text-xs text-gray-500">Total Created</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-blue-600">
+                  {requests.active}
+                </p>
+                <p className="text-xs text-gray-500">Active Now</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-green-600">
+                  {requests.confirmed}
+                </p>
+                <p className="text-xs text-gray-500">Confirmed</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-purple-600">
+                  {requests.responded}
+                </p>
+                <p className="text-xs text-gray-500">You Responded</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Achievements */}
+        {badges.length > 0 && (
+          <div>
+            <h2 className="text-base font-bold text-gray-900 mb-4">
+              Your Achievements
+            </h2>
+            <div className="grid grid-cols-3 gap-3">
+              {badges.map((badge: any, index: number) => (
+                <div
+                  key={index}
+                  className="bg-white p-4 border border-gray-100 text-center"
                 >
-                  View All →
-                </Link>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  <div className="flex gap-4 p-4 bg-red-50 border-l-4 border-red-600 hover:bg-red-100 transition-colors">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-red-600 text-white rounded-lg flex items-center justify-center font-bold">
-                        A+
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-gray-900 mb-1">
-                        Emergency Blood Needed
-                      </h4>
-                      <p className="text-sm text-gray-600 mb-2">
-                        Patient: John Doe • City Hospital
-                      </p>
-                      <div className="flex flex-wrap gap-3 text-xs text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <IconCalendar className="w-4 h-4" />
-                          <span>Dec 25, 2024</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <IconMapPin className="w-4 h-4" />
-                          <span>Dhaka</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <IconPhone className="w-4 h-4" />
-                          <span>+880 1234567890</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold rounded">
-                        URGENT
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 p-4 bg-blue-50 border-l-4 border-blue-600 hover:bg-blue-100 transition-colors">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">
-                        A+
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-gray-900 mb-1">
-                        Regular Donation Schedule
-                      </h4>
-                      <p className="text-sm text-gray-600 mb-2">
-                        Red Crescent Blood Center
-                      </p>
-                      <div className="flex flex-wrap gap-3 text-xs text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <IconCalendar className="w-4 h-4" />
-                          <span>Jan 15, 2025</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <IconMapPin className="w-4 h-4" />
-                          <span>Dhaka</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <span className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded">
-                        SCHEDULED
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="bg-white border rounded-lg">
-              <div className="px-6 py-4 border-b">
-                <h3 className="text-lg font-bold text-gray-900">
-                  Recent Activity
-                </h3>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  <div className="flex gap-4">
-                    <div className="w-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">
-                        Donation Completed
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        You donated blood at City Hospital
-                      </p>
-                      <span className="text-xs text-gray-400">2 days ago</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="w-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">
-                        Request Accepted
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        You accepted a donation request
-                      </p>
-                      <span className="text-xs text-gray-400">5 days ago</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="w-2 bg-yellow-500 rounded-full flex-shrink-0"></div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">
-                        Achievement Unlocked
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Gold Donor badge earned
-                      </p>
-                      <span className="text-xs text-gray-400">1 week ago</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Notifications & Impact */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Your Impact */}
-            <div className="bg-gradient-to-br from-red-600 to-red-700 text-white rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <IconHeart className="w-6 h-6" />
-                Your Impact
-              </h3>
-              <div className="space-y-4">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                  <p className="text-sm opacity-90 mb-1">Lives Saved</p>
-                  <p className="text-4xl font-black">36</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                  <p className="text-sm opacity-90 mb-1">Donations This Year</p>
-                  <p className="text-4xl font-black">4</p>
-                </div>
-                <div className="text-center pt-4 border-t border-white/20">
-                  <p className="text-sm opacity-90">You're a lifesaver! 🎉</p>
-                  <p className="text-xs opacity-75 mt-1">
-                    Keep up the amazing work
+                  <div className="text-3xl mb-2">{badge.icon}</div>
+                  <p className="text-xs font-semibold text-gray-900">
+                    {badge.name}
                   </p>
                 </div>
-              </div>
+              ))}
             </div>
+          </div>
+        )}
 
-            {/* Donation Eligibility */}
-            <div className="bg-white border rounded-lg p-6">
-              <h3 className="font-bold text-gray-900 mb-4">
-                Donation Eligibility
+        {/* Donor Level Progress */}
+        <div className="bg-linear-to-br from-green-700 to-green-700 p-6 text-white  shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-green-100 mb-1">Donor Level</p>
+              <h3 className="text-xl font-bold">
+                {level.current || "New Donor"}
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Age</span>
-                  <span className="text-sm font-semibold text-green-600">
-                    ✓ Eligible
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Weight</span>
-                  <span className="text-sm font-semibold text-green-600">
-                    ✓ Eligible
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Last Donation</span>
-                  <span className="text-sm font-semibold text-green-600">
-                    ✓ Ready
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Health Status</span>
-                  <span className="text-sm font-semibold text-green-600">
-                    ✓ Good
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t">
-                <p className="text-sm text-center text-green-600 font-semibold">
-                  You can donate now!
-                </p>
-              </div>
             </div>
+            <span className="text-4xl filter drop-shadow-md">
+              {level.current === "Platinum"
+                ? "💎"
+                : level.current === "Gold"
+                  ? "🏆"
+                  : level.current === "Silver"
+                    ? "🥈"
+                    : level.current === "Bronze"
+                      ? "🥉"
+                      : "🌟"}
+            </span>
+          </div>
+
+          {level.donationsForNextLevel > 0 && (
+            <>
+              <div className="mb-3">
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <span className="text-green-100">
+                    Progress to {level.next}
+                  </span>
+                  <span className="font-bold">{level.progressPercentage}%</span>
+                </div>
+                {/* Progress Bar Container */}
+                <div className="h-2.5 bg-green-800/40 rounded-full overflow-hidden border border-green-500/30">
+                  <div
+                    className="h-full bg-linear-to-r from-emerald-300 to-teal-400 rounded-full transition-all duration-700 ease-out"
+                    style={{ width: `${level.progressPercentage}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              <p className="text-xs text-green-200 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                {level.donationsForNextLevel} more{" "}
+                {level.donationsForNextLevel === 1 ? "donation" : "donations"}{" "}
+                to unlock {level.next}
+              </p>
+            </>
+          )}
+        </div>
+
+        {/* Notifications */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-bold text-gray-900">Notifications</h2>
+            <Link
+              href="/notifications"
+              className="text-sm text-gray-500 hover:text-gray-900"
+            >
+              See all
+            </Link>
+          </div>
+
+          <div className="bg-white  border border-gray-100 overflow-hidden">
+            <NotificationBody />
           </div>
         </div>
       </div>

@@ -1,5 +1,27 @@
-import React from "react";
+"use client";
+import AddDonationReqModal from "@/components/modal/AddDonationReqModal";
+import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 
-export default function page() {
-  return <div>I am from my blood donation req page</div>;
+export default function Page() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  return (
+    <div>
+      <Button
+        onClick={() => {
+          setIsModalOpen(!isModalOpen);
+        }}
+      >
+        open modal
+      </Button>
+      <AddDonationReqModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          setIsModalOpen(false);
+        }}
+      />
+    </div>
+  );
 }
