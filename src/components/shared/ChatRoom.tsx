@@ -29,13 +29,13 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
-  const [isConnected, setIsConnected] = useState(false); // ✅ Track connection status
+  const [isConnected, setIsConnected] = useState(false);
   const [chatId, setChatId] = useState<string>("");
   const { data: session } = useSession();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
-  const socketRef = useRef<typeof Socket | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null); // ✅ Fixed: add initial value
+  const socketRef = useRef<typeof Socket | null>(null); // ✅ Fixed: use Socket type directly
 
   const senderId = session?.user?.id;
 
@@ -51,7 +51,7 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
 
     socket.on("connect", () => {
       console.log("Connected to server");
-      setIsConnected(true); // ✅ Set connected state
+      setIsConnected(true);
       socket.emit("user_online", senderId);
 
       // Join chat
@@ -63,7 +63,7 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
 
     socket.on("disconnect", () => {
       console.log("Disconnected from server");
-      setIsConnected(false); // ✅ Set disconnected state
+      setIsConnected(false);
     });
 
     // Receive chat history
@@ -153,7 +153,7 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [senderId, receiver.id]);
+  }, [senderId, receiver.id, chatId]); // ✅ Added chatId to dependencies
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -375,14 +375,14 @@ export default function ChatRoom({ receiver }: { receiver: IUser }) {
         />
         <button
           onClick={sendMessage}
-          disabled={!isConnected || !message.trim()} // ✅ Use state instead of ref
+          disabled={!isConnected || !message.trim()}
           style={{
             padding: "12px 24px",
-            background: isConnected && message.trim() ? "#075e54" : "#ccc", // ✅ Use state
+            background: isConnected && message.trim() ? "#075e54" : "#ccc",
             color: "white",
             border: "none",
             borderRadius: "24px",
-            cursor: isConnected && message.trim() ? "pointer" : "not-allowed", // ✅ Use state
+            cursor: isConnected && message.trim() ? "pointer" : "not-allowed",
           }}
         >
           Send
