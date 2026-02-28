@@ -1,11 +1,16 @@
+"use client";
 import ChatRoom from "@/components/shared/ChatRoom";
-import React from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function page() {
+export default function Page() {
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  const name = searchParams.get("name");
   const receiver = {
-    id: "696b4d35150b964a3bcd9869",
-    name: "jisan",
+    id: userId,
+    name: name,
   };
+
   return (
     <div>
       <ChatRoom receiver={receiver} />

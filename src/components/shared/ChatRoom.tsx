@@ -20,8 +20,8 @@ interface IMessage {
 }
 
 interface IUser {
-  id: string;
-  name: string;
+  id: string | null;
+  name: string | null;
 }
 
 export default function ChatRoom({ receiver }: { receiver: IUser }) {

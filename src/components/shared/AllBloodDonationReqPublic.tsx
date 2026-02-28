@@ -19,6 +19,7 @@ import {
   Search,
   Filter,
   Loader2,
+  MessageCircleMore,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import server from "@/lib/api";
@@ -754,7 +755,7 @@ function SquareModal({
         {/* Header */}
         <div className="flex justify-between items-stretch border-b border-black/30 h-16 sm:h-20 shrink-0 relative">
           {isTodayRequest && (
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
               <span className="inline-block bg-red-600 text-white text-xs font-bold px-3 py-1 uppercase animate-pulse shadow-lg">
                 Needed Today!
               </span>
@@ -827,12 +828,22 @@ function SquareModal({
           </div>
 
           {/* Right Panel */}
-          <div className="p-5 sm:p-8 lg:p-10 w-full sm:w-1/2 flex flex-col justify-between bg-gray-50/50">
+          <div className="p-5 sm:p-8 lg:p-10 w-full sm:w-1/2 flex flex-col justify-between bg-gray-50/50 relative">
             <div className="space-y-4 sm:space-y-6">
               <h3 className="text-base sm:text-lg font-bold uppercase border-b border-gray-300 pb-2">
                 Contact Information
               </h3>
               <div className="space-y-3 sm:space-y-4">
+                <div className="right-10 absolute">
+                  <MessageCircleMore
+                    className="cursor-pointer hover:scale-110 "
+                    onClick={() => {
+                      router.push(
+                        `/testsocket?userId=${request?.requesterId?._id}&name=${request?.requesterId?.fullName}`,
+                      );
+                    }}
+                  />
+                </div>
                 <div>
                   <p className="text-xs font-bold text-gray-400 uppercase mb-1">
                     Patient Phone
