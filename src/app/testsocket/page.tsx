@@ -1,19 +1,12 @@
 "use client";
-import ChatRoom from "@/components/shared/ChatRoom";
-import { useSearchParams } from "next/navigation";
+
+import ChatPageContent from "@/components/shared/ChatPageContent";
+import { Suspense } from "react";
 
 export default function Page() {
-  const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
-  const name = searchParams.get("name");
-  const receiver = {
-    id: userId,
-    name: name,
-  };
-
   return (
-    <div>
-      <ChatRoom receiver={receiver} />
-    </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatPageContent />
+    </Suspense>
   );
 }
