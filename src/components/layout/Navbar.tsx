@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { LogOut, LayoutDashboard } from "lucide-react";
+import { LogOut, LayoutDashboard, MessageCircleMore } from "lucide-react";
 import Swal from "sweetalert2";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -164,6 +164,12 @@ export default function Navbar() {
                     </div>
                   )}
                 </div>
+                {/* <Link
+                  href="/chat"
+                  className="text-gray-600 hover:text-red-500 lg:px-3 py-2 flex items-center gap-2"
+                >
+                  <MessageCircleMore className="w-6 h-6" />
+                </Link> */}
               </>
             ) : (
               <Link

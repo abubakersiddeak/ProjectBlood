@@ -228,7 +228,7 @@ export default function RegisterPage() {
       reset();
       handleRemoveImage();
 
-      router.push("/");
+      router.push("/dashboard");
     } catch (error: any) {
       console.error("Registration error:", error);
       Swal.fire({

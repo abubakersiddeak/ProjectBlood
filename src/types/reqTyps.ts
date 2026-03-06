@@ -14,6 +14,9 @@ export interface IDonationRequest {
     fullName: string;
     avatar?: string;
   };
+  urgency: "Normal" | "Urgent" | "Emergency";
+  createdAt: string;
+  totalUnitsNeeded: number;
 }
 export interface Address {
   address: string;

@@ -68,7 +68,7 @@ export default function Page() {
           timer: 1500,
           showConfirmButton: false,
         }).then(() => {
-          router.push("/"); // Use router for faster transitions
+          router.push("/dashboard"); // Use router for faster transitions
           router.refresh(); // Refresh to update server components/session
         });
       } catch (error: any) {

@@ -430,7 +430,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Notifications */}
-        <div>
+        {/* <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-gray-900">Notifications</h2>
             <Link
@@ -444,7 +444,7 @@ export default function DashboardPage() {
           <div className="bg-white  border border-gray-100 overflow-hidden">
             <NotificationBody />
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

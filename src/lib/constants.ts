@@ -22,9 +22,9 @@ export const BLOOD_GROUPS = [
   "O-",
 ];
 export const URGENCY_LEVELS = [
-  { value: "Normal", label: "সাধারণ" },
-  { value: "Urgent", label: "জরুরি" },
-  { value: "Emergency", label: "অতি জরুরি" },
+  { value: "Normal", label: "Normal" },
+  { value: "Urgent", label: "Urgent" },
+  { value: "Emergency", label: "Emergency " },
 ];
 export const months = [
   "Jan",
@@ -40,3 +40,4 @@ export const months = [
   "Nov",
   "Dec",
 ];
+export const DONATION_STATUS = ["pending", "in-progress", "success", "cancel"];
