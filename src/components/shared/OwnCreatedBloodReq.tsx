@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import server from "@/lib/api";
-import EditDonationReqModal from "./EditDonationReqModal";
+import EditDonationReqModal from "../modal/EditDonationReqModal";
 
 export default function OwnCreatedBloodReq() {
   const [requests, setRequests] = useState<IDonationRequest[]>([]);
@@ -228,10 +228,13 @@ export default function OwnCreatedBloodReq() {
                     </CardTitle>
                     <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-1 flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-gray-400 shrink-0" />
-                      {new Date(request.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {new Date(request.donationDate).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                        },
+                      )}
                     </p>
                   </div>
                 </div>

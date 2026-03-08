@@ -173,7 +173,7 @@ export default function EditDonationReqModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="rounded-none max-h-[90vh] overflow-y-auto hide-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
             Edit Blood Donation Request
@@ -183,7 +183,7 @@ export default function EditDonationReqModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 ">
           {/* Recipient Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -412,20 +412,20 @@ export default function EditDonationReqModal({
             </p>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 ">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={loading}
-              className="cursor-pointer"
+              className="cursor-pointer rounded-none"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="cursor-pointer bg-red-600 hover:bg-red-700"
+              className="cursor-pointer rounded-none bg-black "
             >
               {loading ? (
                 <>

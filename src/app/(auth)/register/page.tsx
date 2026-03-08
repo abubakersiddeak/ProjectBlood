@@ -14,8 +14,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
-
-const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+import { BLOOD_GROUPS } from "@/lib/constants";
 
 export default function RegisterPage() {
   const router = useRouter();

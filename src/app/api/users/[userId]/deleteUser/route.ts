@@ -6,48 +6,39 @@ import UserModel from "@/models/UserModel";
 
 export async function DELETE(
   request: NextRequest,
+
   context: { params: Promise<{ userId: string }> },
 ): Promise<Response> {
   try {
     const session = await auth();
 
+    const { userId } = await context.params;
+
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (session.user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Forbidden: Only admins can delete users" },
-        { status: 403 },
-      );
-    }
-
-    const { userId } = await context.params;
+    await dbConnect();
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
-    await dbConnect();
-
-    const targetUser = await UserModel.findById(userId);
-
-    if (!targetUser) {
+    const currentUser = await UserModel.findById(session.user.id);
+    if (!currentUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (targetUser.role === "admin") {
-      return NextResponse.json(
-        { error: "Cannot delete admin users" },
-        { status: 403 },
-      );
+    const isOwner = session.user.id === userId;
+    const isAdmin = currentUser.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    if (targetUser._id.toString() === session.user.id) {
-      return NextResponse.json(
-        { error: "Cannot delete your own account" },
-        { status: 403 },
-      );
+    const targetUser = await UserModel.findById(userId);
+    if (!targetUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const deletedUserInfo = {

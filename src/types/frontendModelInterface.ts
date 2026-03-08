@@ -46,6 +46,7 @@ export interface FIUser {
     };
     coordinates?: [number, number];
     type?: string;
+    city?: string;
   };
   followerCount?: number;
   following?: any[];

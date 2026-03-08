@@ -216,9 +216,7 @@ export default function AddDonationReqModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  // ===========================
   // Input Handlers
-  // ===========================
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -237,26 +235,26 @@ export default function AddDonationReqModal({
     }
   };
 
-  const handleGetCurrentLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setFormData((prev) => ({
-            ...prev,
-            latitude: position.coords.latitude.toString(),
-            longitude: position.coords.longitude.toString(),
-          }));
-          setErrors((prev) => ({ ...prev, location: "" }));
-        },
-        () => {
-          setErrors((prev) => ({
-            ...prev,
-            location: "Location not found. Enter manually.",
-          }));
-        },
-      );
-    }
-  };
+  // const handleGetCurrentLocation = () => {
+  //   if ("geolocation" in navigator) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         setFormData((prev) => ({
+  //           ...prev,
+  //           latitude: position.coords.latitude.toString(),
+  //           longitude: position.coords.longitude.toString(),
+  //         }));
+  //         setErrors((prev) => ({ ...prev, location: "" }));
+  //       },
+  //       () => {
+  //         setErrors((prev) => ({
+  //           ...prev,
+  //           location: "Location not found. Enter manually.",
+  //         }));
+  //       },
+  //     );
+  //   }
+  // };
 
   // ===========================
   // Submit Handler
@@ -347,11 +345,11 @@ export default function AddDonationReqModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b-4 border-red-600 bg-gray-50">
+      <DialogContent className="sm:max-w-175 max-h-[90vh] overflow-y-auto p-0 rounded-none hide-scrollbar">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b-4 border-black bg-gray-50">
           <DialogTitle className="text-2xl font-black flex items-center gap-3">
-            <div className="w-12 h-12 bg-red-600 text-white flex items-center justify-center">
-              <Droplet size={28} className="fill-current" />
+            <div className="w-12 h-12 bg-black text-white flex items-center justify-center">
+              <Droplet size={28} className="fill-current text-red-600" />
             </div>
             <div>
               <div className="text-gray-900">Create Blood Donation Request</div>
@@ -387,7 +385,7 @@ export default function AddDonationReqModal({
 
           {/* Recipient Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 border-b-2 border-red-600 pb-2">
+            <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 border-b-2 border-black pb-2">
               <User size={18} className="text-red-600" /> Patient Information
             </h3>
 
@@ -439,7 +437,7 @@ export default function AddDonationReqModal({
 
           {/* Blood & Units */}
           <div className="space-y-4">
-            <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 border-b-2 border-red-600 pb-2">
+            <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 border-b-2 border-black pb-2">
               <Droplet size={18} className="text-red-600" /> Blood Information
             </h3>
 
@@ -525,7 +523,7 @@ export default function AddDonationReqModal({
 
           {/* Hospital Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 border-b-2 border-red-600 pb-2">
+            <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 border-b-2 border-black pb-2">
               <Building2 size={18} className="text-red-600" /> Hospital
               Information
             </h3>
@@ -620,7 +618,7 @@ export default function AddDonationReqModal({
 
           {/* Date & Time */}
           <div className="space-y-4">
-            <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 border-b-2 border-red-600 pb-2">
+            <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 border-b-2 border-black pb-2">
               <Calendar size={18} className="text-red-600" /> Date & Time
             </h3>
 
@@ -703,14 +701,14 @@ export default function AddDonationReqModal({
               variant="outline"
               onClick={handleClose}
               disabled={isLoading}
-              className="cursor-pointer w-full sm:w-auto border-2 hover:bg-gray-100 font-bold"
+              className="cursor-pointer rounded-none  w-full sm:w-auto border-2 hover:bg-gray-100 font-bold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-red-600 hover:bg-red-700 text-white cursor-pointer w-full sm:w-auto sm:min-w-[160px] font-bold shadow-lg"
+              className="bg-black rounded-none   text-white cursor-pointer w-full sm:w-auto sm:min-w-40 font-bold shadow-lg"
             >
               {isLoading ? (
                 <>

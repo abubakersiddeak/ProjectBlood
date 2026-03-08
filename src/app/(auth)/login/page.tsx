@@ -8,6 +8,7 @@ import FormInput from "@/components/shared/FormInput";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Link from "next/link";
 
 export default function Page() {
   const router = useRouter();
@@ -144,72 +145,15 @@ export default function Page() {
                   />
                 </div>
 
-                {/* Remember Me & Forgot Password */}
-                {/* <div className="flex items-center justify-between">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer"
-                    />
-                    <span className="ml-2 text-sm text-gray-600">
-                      Remember me
-                    </span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      Swal.fire({
-                        title: "Forgot Password?",
-                        html: `
-                          <p class="text-gray-600 mb-4">Enter your email address and we'll send you instructions to reset your password.</p>
-                          <input
-                            type="email"
-                            id="reset-email"
-                            class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            placeholder="Enter your email"
-                          />
-                        `,
-                        showCancelButton: true,
-                        confirmButtonText: "Send Reset Link",
-                        confirmButtonColor: "#dc2626",
-                        cancelButtonColor: "#6b7280",
-                        preConfirm: () => {
-                          const emailInput =
-                            document.getElementById("reset-email");
-                          const email = emailInput ? emailInput.value : "";
-                          if (!email) {
-                            Swal.showValidationMessage(
-                              "Please enter your email"
-                            );
-                            return false;
-                          }
-                          if (!/\S+@\S+\.\S+/.test(email)) {
-                            Swal.showValidationMessage(
-                              "Please enter a valid email"
-                            );
-                            return false;
-                          }
-                          return email;
-                        },
-                      }).then((result) => {
-                        if (result.isConfirmed) {
-                          // Here you would make an API call to send reset email
-                          Swal.fire({
-                            icon: "success",
-                            title: "Email Sent!",
-                            text: "If an account exists with this email, you will receive password reset instructions.",
-                            confirmButtonColor: "#dc2626",
-                          });
-                        }
-                      });
-                    }}
-                    className="text-sm text-red-600 hover:underline cursor-pointer"
+                {/*  Forgot Password */}
+                <div className="flex items-center justify-between">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-red-600 hover:text-red-700 hover:underline"
                   >
-                    Forgot password?
-                  </button>
-                </div> */}
+                    Forgot Password?
+                  </Link>
+                </div>
 
                 {/* Submit Button */}
                 <button

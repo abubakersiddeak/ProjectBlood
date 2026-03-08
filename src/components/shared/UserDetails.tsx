@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -23,6 +23,7 @@ import {
   IconHeart,
   IconFileText,
   IconMap,
+  IconEdit,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,9 +43,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
 
 import { FIUser } from "@/types/frontendModelInterface";
+import { BLOOD_GROUPS } from "@/lib/constants";
+import { DISTRICT_LIST, getGeoDetails } from "@/lib/geoLocationUtils";
+import { DangerZone } from "./DangerZone";
 
 type UserRole = "admin" | "volunteer" | "user";
 type UserStatus = "active" | "blocked" | "pending" | "inactive";
@@ -71,12 +93,34 @@ export function UserDetailsComponent({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedAction, setSelectedAction] = useState<{
     type: "status" | "role" | "delete";
     value?: UserStatus | UserRole;
   } | null>(null);
 
+  // Location state
+  const [selectedDistrict, setSelectedDistrict] = useState<string>("");
+  const [selectedUpazila, setSelectedUpazila] = useState<string>("");
+
+  // Edit form state
+  const [editFormData, setEditFormData] = useState({
+    fullName: "",
+    phone: "",
+    bloodGroup: "",
+    isAvailable: true,
+    district: "",
+    upazila: "",
+  });
+
+  // Get upazilas and coordinates based on selected location
+  const { upazilas, coordinates } = useMemo(
+    () => getGeoDetails(selectedDistrict, selectedUpazila),
+    [selectedDistrict, selectedUpazila],
+  );
+
   const currentUserRole = (session?.user?.role as UserRole) || "user";
+  const isOwnProfile = session?.user?.id === userId;
 
   // Helper to get actual ID from MongoDB object
   const getActualId = (id: any): string => {
@@ -103,6 +147,23 @@ export function UserDetailsComponent({
         const data = await response.json();
         setUser(data);
         onUserUpdate?.(data);
+
+        // Initialize edit form data
+        const district = data.location?.address?.district || "";
+        const upazila = data.location?.address?.upazila || "";
+
+        setEditFormData({
+          fullName: data.fullName || "",
+          phone: data.phone || "",
+          bloodGroup: data.bloodGroup || "",
+          isAvailable: data.isAvailable ?? true,
+          district: district,
+          upazila: upazila,
+        });
+
+        // Set location state
+        setSelectedDistrict(district);
+        setSelectedUpazila(upazila);
       } catch (error) {
         console.error("Error fetching user details:", error);
         toast.error("Failed to load user details");
@@ -115,6 +176,108 @@ export function UserDetailsComponent({
       fetchUserDetails();
     }
   }, [userId, onUserUpdate]);
+
+  // Sync edit form data when dialog opens
+  useEffect(() => {
+    if (showEditDialog && user) {
+      setSelectedDistrict(editFormData.district);
+      setSelectedUpazila(editFormData.upazila);
+    }
+  }, [showEditDialog, user, editFormData.district, editFormData.upazila]);
+
+  // Handle user info update
+  const handleUpdateUserInfo = async () => {
+    try {
+      // Validation
+      if (!selectedDistrict || !selectedUpazila) {
+        toast.error("Please select both district and upazila");
+        return;
+      }
+
+      if (!coordinates || coordinates.length !== 2) {
+        toast.error(
+          "Invalid location coordinates. Please reselect your location.",
+        );
+        return;
+      }
+
+      if (!editFormData.fullName.trim()) {
+        toast.error("Please enter your full name");
+        return;
+      }
+
+      if (!editFormData.phone.trim()) {
+        toast.error("Please enter your phone number");
+        return;
+      }
+
+      if (!editFormData.bloodGroup) {
+        toast.error("Please select your blood group");
+        return;
+      }
+
+      setIsUpdating(true);
+      const actualId = getActualId(user?._id);
+
+      const updatePayload = {
+        fullName: editFormData.fullName.trim(),
+        phone: editFormData.phone.trim(),
+        bloodGroup: editFormData.bloodGroup,
+        isAvailable: editFormData.isAvailable,
+        district: selectedDistrict,
+        upazila: selectedUpazila,
+        location: {
+          type: "Point" as const,
+          coordinates: coordinates,
+          address: {
+            district: selectedDistrict,
+            upazila: selectedUpazila,
+          },
+          city: selectedDistrict,
+        },
+      };
+
+      const response = await fetch(`/api/users/${actualId}/update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatePayload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update profile");
+      }
+
+      const data = await response.json();
+      toast.success(data.message || "Profile updated successfully");
+
+      // Update local state
+      const updatedUser: FIUser = {
+        ...user!,
+        fullName: editFormData.fullName,
+        phone: editFormData.phone,
+        bloodGroup: editFormData.bloodGroup,
+        isAvailable: editFormData.isAvailable,
+        location: {
+          type: "Point" as const,
+          coordinates: coordinates as [number, number],
+          address: {
+            district: selectedDistrict,
+            upazila: selectedUpazila,
+          },
+          city: selectedDistrict,
+        },
+      };
+      setUser(updatedUser);
+      onUserUpdate?.(updatedUser);
+      setShowEditDialog(false);
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast.error(error.message || "Failed to update profile");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   // Handle status change
   const handleStatusChange = async (newStatus: UserStatus) => {
@@ -262,18 +425,24 @@ export function UserDetailsComponent({
               <IconArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          {/* <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {user.fullName.toLocaleUpperCase()} Details
-            </h1>
-            <p className="text-sm text-gray-500">
-              View and manage user information
-            </p>
-          </div> */}
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-2 flex-wrap">
+          {/* Edit Button - Only for own profile */}
+          {isOwnProfile && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowEditDialog(true)}
+              disabled={isUpdating}
+              className="border-blue-200 rounded-none cursor-pointer text-blue-600 hover:bg-blue-50"
+            >
+              <IconEdit className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          )}
+
           {canManageStatus && (
             <Button
               variant="outline"
@@ -323,7 +492,7 @@ export function UserDetailsComponent({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
         {/* Left Column - Profile Card */}
-        <div className="lg:col-span-1 space-y-2">
+        <div className="col-span-3 lg:col-span-1 space-y-2">
           <Card>
             <CardContent className="pt-2">
               <div className="flex flex-col items-center">
@@ -437,11 +606,14 @@ export function UserDetailsComponent({
                   <div className="flex items-center gap-2 text-sm">
                     <IconMapPin className="h-4 w-4 text-gray-400 shrink-0" />
                     <span className="text-gray-900">
-                      {user.location?.address?.district || "Not specified"}
+                      {user.location?.address?.upazila &&
+                      user.location?.address?.district
+                        ? `${user.location.address.upazila}, ${user.location.address.district}`
+                        : user.location?.address?.district || "Not specified"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <IconUser className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <IconUser className="h-4 w-4 text-gray-400 shrink-0" />
                     <span className="text-gray-900 font-mono">
                       ID: {user.userId}
                     </span>
@@ -507,43 +679,7 @@ export function UserDetailsComponent({
         </div>
 
         {/* Right Column - Details */}
-        <div className="lg:col-span-2 space-y-2">
-          {/* Personal Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <IconUser className="h-5 w-5" />
-                Personal Information
-              </CardTitle>
-              <CardDescription>Basic details about the user</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoField label="Full Name" value={user.fullName} />
-                <InfoField
-                  label="User ID"
-                  value={user.userId.toString()}
-                  mono
-                />
-                <InfoField label="Email Address" value={user.email} />
-                <InfoField label="Phone Number" value={user?.phone ?? ""} />
-                <InfoField
-                  label="Blood Group"
-                  value={user.bloodGroup}
-                  valueClassName="font-bold text-red-600"
-                  icon={<IconDroplet className="h-4 w-4 text-red-600" />}
-                />
-                <InfoField
-                  label="Availability Status"
-                  value={user.isAvailable ? "Available" : "Not Available"}
-                  valueClassName={
-                    user.isAvailable ? "text-green-600" : "text-red-600"
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
-
+        <div className="lg:col-span-2 col-span-3 space-y-2">
           {/* Location Information */}
           <Card>
             <CardHeader>
@@ -574,8 +710,8 @@ export function UserDetailsComponent({
                       <div className="flex items-center gap-2">
                         <IconMap className="h-4 w-4 text-gray-400" />
                         <p className="text-base text-gray-900 font-mono">
-                          {user.location.coordinates[0]},{" "}
-                          {user.location.coordinates[1]}
+                          {user.location.coordinates[0].toFixed(4)},{" "}
+                          {user.location.coordinates[1].toFixed(4)}
                         </p>
                       </div>
                     </div>
@@ -589,41 +725,6 @@ export function UserDetailsComponent({
                     </div>
                   </>
                 )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Social Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <IconUsers className="h-5 w-5" />
-                Social Information
-              </CardTitle>
-              <CardDescription>Community engagement details</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoField
-                  label="Followers"
-                  value={user.followerCount?.toString() || "0"}
-                  icon={<IconHeart className="h-4 w-4 text-gray-400" />}
-                />
-                <InfoField
-                  label="Following"
-                  value={user.following?.length?.toString() || "0"}
-                  icon={<IconUsers className="h-4 w-4 text-gray-400" />}
-                />
-                <InfoField
-                  label="Blog Posts"
-                  value={user.blogCount?.toString() || "0"}
-                  icon={<IconFileText className="h-4 w-4 text-gray-400" />}
-                />
-                <InfoField
-                  label="Donations Made"
-                  value={user.donationHistory?.length?.toString() || "0"}
-                  icon={<IconDroplet className="h-4 w-4 text-gray-400" />}
-                />
               </div>
             </CardContent>
           </Card>
@@ -706,9 +807,435 @@ export function UserDetailsComponent({
             </CardContent>
           </Card>
         </div>
+        <div className=" col-span-3">
+          {" "}
+          {/* Danger Zone - Only visible for own profile or admin */}
+          {(isOwnProfile || canDelete) && (
+            <DangerZone
+              userId={getActualId(user._id)}
+              userEmail={user.email}
+              userName={user.fullName}
+              isOwnProfile={isOwnProfile}
+              isAdmin={currentUserRole === "admin"}
+              onAccountDeleted={() => {
+                if (!isOwnProfile) {
+                  onUserDelete?.();
+                  router.push("/dashboard/users");
+                }
+              }}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Dialogs */}
+      {/* Edit Profile Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-3xl max-h-[95vh] overflow-hidden rounded-none p-0">
+          {/* Header with gradient background */}
+          <div className="relative bg-linear-to-r from-blue-600 to-blue-400 px-6 py-8">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="relative">
+              <DialogHeader className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
+                    <IconEdit className="h-6 w-6 text-white" />
+                  </div>
+                  <DialogTitle className="text-2xl sm:text-3xl font-bold text-white">
+                    Edit Profile
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-white/90 text-sm sm:text-base">
+                  Update your personal information and keep your profile current
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="overflow-y-auto max-h-[calc(95vh-280px)] px-6 py-6 hide-scrollbar">
+            <div className="space-y-8">
+              {/* Personal Details Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                  <div className="bg-blue-100 dark:bg-blue-950 p-2 rounded-lg">
+                    <IconUser className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Personal Details
+                  </h3>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="fullName"
+                      className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1"
+                    >
+                      Full Name
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <div className="relative">
+                      <IconUser className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="fullName"
+                        value={editFormData.fullName}
+                        onChange={(e) =>
+                          setEditFormData((prev) => ({
+                            ...prev,
+                            fullName: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter your full name"
+                        className="pl-10 h-11 border-gray-300 dark:border-gray-700 focus:border-red-500 focus:ring-red-500 transition-all"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="phone"
+                      className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1"
+                    >
+                      Phone Number
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <div className="relative">
+                      <IconPhone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={editFormData.phone}
+                        onChange={(e) =>
+                          setEditFormData((prev) => ({
+                            ...prev,
+                            phone: e.target.value,
+                          }))
+                        }
+                        placeholder="+880 1234-567890"
+                        className="pl-10 h-11 border-gray-300 dark:border-gray-700 focus:border-red-500 focus:ring-red-500 transition-all"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Blood Information Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                  <div className="bg-red-100 dark:bg-red-950 p-2 rounded-lg">
+                    <IconDroplet className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Blood Information
+                  </h3>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="bloodGroup"
+                      className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1"
+                    >
+                      Blood Group
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Select
+                      value={editFormData.bloodGroup}
+                      onValueChange={(value) =>
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          bloodGroup: value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger className="h-11 border-gray-300 dark:border-gray-700 focus:border-red-500 focus:ring-red-500">
+                        <div className="flex items-center gap-2">
+                          <IconDroplet className="h-4 w-4 text-red-600" />
+                          <SelectValue placeholder="Select blood group" />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <div className="grid grid-cols-4 gap-2 p-2">
+                          {BLOOD_GROUPS.map((group) => (
+                            <SelectItem
+                              key={group}
+                              value={group}
+                              className="cursor-pointer hover:bg-red-50 dark:hover:bg-red-950"
+                            >
+                              <div className="flex items-center gap-2 font-bold text-red-600">
+                                <IconDroplet className="h-3 w-3" />
+                                {group}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </div>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="isAvailable"
+                      className="text-sm font-semibold text-gray-700 dark:text-gray-300"
+                    >
+                      Donation Availability
+                    </Label>
+                    <Select
+                      value={editFormData.isAvailable ? "yes" : "no"}
+                      onValueChange={(value) =>
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          isAvailable: value === "yes",
+                        }))
+                      }
+                    >
+                      <SelectTrigger className="h-11 border-gray-300 dark:border-gray-700 focus:border-red-500 focus:ring-red-500">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="yes" className="cursor-pointer">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span className="font-medium text-green-700 dark:text-green-400">
+                              Available to Donate
+                            </span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="no" className="cursor-pointer">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <span className="font-medium text-red-700 dark:text-red-400">
+                              Not Available
+                            </span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Availability Info Card */}
+                <div
+                  className={`p-4 rounded-lg border-l-4 ${
+                    editFormData.isAvailable
+                      ? "bg-green-50 dark:bg-green-950/20 border-green-500"
+                      : "bg-red-50 dark:bg-red-950/20 border-red-500"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {editFormData.isAvailable ? (
+                      <IconCheck className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    ) : (
+                      <IconX className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    )}
+                    <div>
+                      <p
+                        className={`text-sm font-semibold ${
+                          editFormData.isAvailable
+                            ? "text-green-800 dark:text-green-300"
+                            : "text-red-800 dark:text-red-300"
+                        }`}
+                      >
+                        {editFormData.isAvailable
+                          ? "You are available to donate blood"
+                          : "You are currently not available"}
+                      </p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          editFormData.isAvailable
+                            ? "text-green-700 dark:text-green-400"
+                            : "text-red-700 dark:text-red-400"
+                        }`}
+                      >
+                        {editFormData.isAvailable
+                          ? "Your profile will be visible to those seeking blood donors"
+                          : "Your profile will not appear in donor searches"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Location Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                  <div className="bg-green-100 dark:bg-green-950 p-2 rounded-lg">
+                    <IconMapPin className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Location Details
+                  </h3>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* District Selection */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="district"
+                      className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1"
+                    >
+                      District
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Select
+                      value={selectedDistrict}
+                      onValueChange={(value) => {
+                        setSelectedDistrict(value);
+                        setSelectedUpazila(""); // Reset upazila when district changes
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          district: value,
+                          upazila: "",
+                        }));
+                      }}
+                    >
+                      <SelectTrigger className="h-11 border-gray-300 dark:border-gray-700 focus:border-red-500 focus:ring-red-500">
+                        <div className="flex items-center gap-2">
+                          <IconMapPin className="h-4 w-4 text-green-600" />
+                          <SelectValue placeholder="Select your district" />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {DISTRICT_LIST.map((district) => (
+                          <SelectItem
+                            key={district}
+                            value={district}
+                            className="cursor-pointer hover:bg-green-50 dark:hover:bg-green-950"
+                          >
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Upazila Selection */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="upazila"
+                      className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1"
+                    >
+                      Upazila / Area
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Select
+                      value={selectedUpazila}
+                      onValueChange={(value) => {
+                        setSelectedUpazila(value);
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          upazila: value,
+                        }));
+                      }}
+                      disabled={!selectedDistrict || upazilas.length === 0}
+                    >
+                      <SelectTrigger className="h-11 border-gray-300 dark:border-gray-700 focus:border-red-500 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <div className="flex items-center gap-2">
+                          <IconMapPin className="h-4 w-4 text-green-600" />
+                          <SelectValue
+                            placeholder={
+                              selectedDistrict
+                                ? "Select your upazila"
+                                : "Select district first"
+                            }
+                          />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {upazilas.map((upazila) => (
+                          <SelectItem
+                            key={upazila}
+                            value={upazila}
+                            className="cursor-pointer hover:bg-green-50 dark:hover:bg-green-950"
+                          >
+                            {upazila}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Location Preview */}
+                {selectedDistrict && selectedUpazila && (
+                  <div className="mt-3 p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <IconMapPin className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                          Selected Location
+                        </p>
+                        <p className="text-sm text-green-700 dark:text-green-400 mt-1">
+                          <strong>
+                            {selectedUpazila}, {selectedDistrict}
+                          </strong>
+                        </p>
+                        {coordinates && coordinates.length === 2 && (
+                          <p className="text-xs text-green-600 dark:text-green-500 mt-1">
+                            Coordinates: {coordinates[1].toFixed(4)},{" "}
+                            {coordinates[0].toFixed(4)}
+                          </p>
+                        )}
+                      </div>
+                      <IconCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Warning when no district selected */}
+                {!selectedDistrict && (
+                  <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <IconMapPin className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-amber-800 dark:text-amber-300">
+                        Please select your district to continue
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer with Actions */}
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+            <DialogFooter className="gap-3 sm:gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowEditDialog(false)}
+                disabled={isUpdating}
+                className="cursor-pointer rounded-none hover:bg-gray-100 dark:hover:bg-gray-800 transition-all flex-1 sm:flex-none"
+              >
+                <IconX className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleUpdateUserInfo}
+                disabled={isUpdating}
+                className="cursor-pointer rounded-none bg-linear-to-r from-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-none"
+              >
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving Changes...
+                  </>
+                ) : (
+                  <>
+                    <IconCheck className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Other Dialogs */}
       <DeleteDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}

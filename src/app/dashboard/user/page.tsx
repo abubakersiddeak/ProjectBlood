@@ -1,6 +1,5 @@
 "use client";
 import { useSession } from "next-auth/react";
-import NotificationBody from "@/components/shared/NotificationBody";
 import {
   IconDroplet,
   IconHeart,
@@ -38,7 +37,7 @@ export default function DashboardPage() {
     fetchSummaryData();
   }, []);
 
-  if (loading) {
+  if (loading && !session?.user) {
     return <UserLandingPageSkliton />;
   }
 
@@ -166,7 +165,7 @@ export default function DashboardPage() {
                   People are looking for your blood type
                 </p>
                 <Link
-                  href="/requests"
+                  href={`/dashboard/${session!.user.role}/requests`}
                   className="inline-flex items-center text-sm font-semibold text-red-600 hover:text-red-700"
                 >
                   View Requests

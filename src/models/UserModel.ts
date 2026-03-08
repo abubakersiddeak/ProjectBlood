@@ -26,12 +26,20 @@ const donationSchema = new Schema<IDonationModel>(
 
     note: { type: String },
   },
-  { _id: true }
+  { _id: true },
 );
 
 // --- Main User Schema ---
 const userSchema = new Schema<IUserModel>(
   {
+    resetPasswordToken: {
+      type: String,
+      select: false,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      select: false,
+    },
     userId: { type: Number, unique: true }, // ৮ ডিজিটের অটো-ইনক্রিমেন্ট আইডি
     fullName: { type: String, required: true, trim: true },
     email: {
@@ -111,7 +119,7 @@ const userSchema = new Schema<IUserModel>(
     },
   },
 
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // --- Indexes ---

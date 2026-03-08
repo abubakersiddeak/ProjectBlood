@@ -14,6 +14,8 @@ export interface IUserLocation {
 }
 // --- UserModel Interface ---
 export interface IUserModel extends Document {
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   userId: number;
   fullName: string;
   email: string;

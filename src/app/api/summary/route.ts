@@ -56,7 +56,7 @@ export async function GET() {
       // ✅ Active/Pending requests
       const activeRequests = await BloodDonationReqModel.countDocuments({
         requesterId: userId,
-        donationStatus: { $in: ["pending", "in-progress"] },
+        donationStatus: { $in: ["pending"] },
       });
 
       // ✅ নিজে যে requests এ respond করেছে (Potential Donor হিসেবে)
@@ -229,7 +229,8 @@ export async function GET() {
       // ✅ Matching blood group requests
       const matchingBloodRequests = await BloodDonationReqModel.countDocuments({
         bloodGroup: user.bloodGroup,
-        donationStatus: { $in: ["pending", "in-progress"] },
+        donationStatus: { $in: ["pending"] },
+        donationDate: { $gte: new Date() }, // only upcoming dates
       });
 
       // ✅ Achievement badges

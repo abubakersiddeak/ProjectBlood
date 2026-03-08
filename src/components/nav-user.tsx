@@ -1,10 +1,8 @@
 "use client";
-
+import { useSession } from "next-auth/react";
 import {
-  IconCreditCard,
   IconDotsVertical,
   IconLogout,
-  IconNotification,
   IconUserCircle,
 } from "@tabler/icons-react";
 
@@ -25,6 +23,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut } from "next-auth/react";
+import Link from "next/link";
 
 export function NavUser({
   user,
@@ -36,7 +35,10 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-
+  const { data: session } = useSession();
+  if (!session) {
+    return <div>session loading</div>;
+  }
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -83,16 +85,18 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <IconUserCircle />
-                Account
+                <Link href={`/dashboard/${session?.user?.role}/profile`}>
+                  Account
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              {/* <DropdownMenuItem>
                 <IconCreditCard />
                 Billing
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <IconNotification />
                 Notifications
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem

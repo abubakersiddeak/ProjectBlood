@@ -5,13 +5,7 @@ import {
   IconSettings,
   IconUsers,
 } from "@tabler/icons-react";
-import {
-  BanknoteArrowDown,
-  Cctv,
-  CirclePlus,
-  DollarSign,
-  Loader,
-} from "lucide-react";
+import { BanknoteArrowDown, Cctv, CirclePlus, Loader } from "lucide-react";
 
 const NAV_DATA = {
   user: {
@@ -39,25 +33,20 @@ const NAV_DATA = {
       icon: Loader,
       roles: ["ADMIN"],
     },
-    {
-      title: "Fund Details",
-      url: "/dashboard/admin/fundDetails",
-      icon: BanknoteArrowDown,
-      roles: ["ADMIN"],
-    },
+    // {
+    //   title: "Fund Details",
+    //   url: "/dashboard/admin/fundDetails",
+    //   icon: BanknoteArrowDown,
+    //   roles: ["ADMIN"],
+    // },
 
-    {
-      title: "All Activities",
-      url: "/dashboard/admin/allActivities",
-      icon: Cctv,
-      roles: ["ADMIN"],
-    },
-    {
-      title: "Create Blood Request",
-      url: "/dashboard/admin/createBloodRequest",
-      icon: CirclePlus,
-      roles: ["ADMIN"],
-    },
+    // {
+    //   title: "All Activities",
+    //   url: "/dashboard/admin/allActivities",
+    //   icon: Cctv,
+    //   roles: ["ADMIN"],
+    // },
+
     // Volunteer dashboard
     {
       title: "Volunteer Panel",
@@ -91,18 +80,13 @@ const NAV_DATA = {
       icon: Loader,
       roles: ["USER"],
     },
-    {
-      title: "Create Blood Donation Request",
-      url: "/dashboard/user/createRequest",
-      icon: CirclePlus,
-      roles: ["USER"],
-    },
-    {
-      title: "Fund Donation Details",
-      url: "/dashboard/user/fundDetails",
-      icon: DollarSign,
-      roles: ["USER"],
-    },
+
+    // {
+    //   title: "Fund Donation Details",
+    //   url: "/dashboard/user/fundDetails",
+    //   icon: DollarSign,
+    //   roles: ["USER"],
+    // },
   ],
 
   navSecondary: [
@@ -110,11 +94,11 @@ const NAV_DATA = {
       title: "Settings",
       url: "/dashboard/settings",
       icon: IconSettings,
-      roles: ["ADMIN", "VOLUNTEER", "USER"],
+      roles: ["ADMIN", "VOLUNTEER"],
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "/dashboard/user/gethelp",
       icon: IconHelp,
       roles: ["ADMIN", "VOLUNTEER", "USER"],
     },
