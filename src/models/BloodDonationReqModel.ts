@@ -1,6 +1,30 @@
 import mongoose, { Schema, Model } from "mongoose";
 import { IBloodDonationRequest } from "@/types/modelTyps";
-
+const potentialDonorSchema = new Schema(
+  {
+    donorId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["interested", "confirmed", "declined"],
+      default: "interested",
+    },
+    appliedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    confirmedAt: {
+      type: Date,
+    },
+    declinedAt: {
+      type: Date,
+    },
+  },
+  { _id: false },
+);
 const bloodDonationRequestSchema = new Schema<IBloodDonationRequest>(
   {
     requesterId: {
@@ -74,17 +98,7 @@ const bloodDonationRequestSchema = new Schema<IBloodDonationRequest>(
       index: true,
     },
     // ডোনারদের রেসপন্স ট্র্যাক করার জন্য
-    potentialDonors: [
-      {
-        donorId: { type: Schema.Types.ObjectId, ref: "User" },
-        status: {
-          type: String,
-          enum: ["interested", "confirmed", "declined"],
-          default: "interested",
-        },
-        appliedAt: { type: Date, default: Date.now },
-      },
-    ],
+    potentialDonors: [potentialDonorSchema],
     additionalMessage: {
       type: String,
       maxlength: [500, "Message cannot exceed 500 characters"],
@@ -94,7 +108,7 @@ const bloodDonationRequestSchema = new Schema<IBloodDonationRequest>(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 // --- Geospatial Index (ম্যাপে সার্চ করার জন্য সবচেয়ে গুরুত্বপূর্ণ) ---
@@ -105,7 +119,7 @@ const BloodDonationReqModel: Model<IBloodDonationRequest> =
   mongoose.models.BloodDonationRequest ||
   mongoose.model<IBloodDonationRequest>(
     "BloodDonationRequest",
-    bloodDonationRequestSchema
+    bloodDonationRequestSchema,
   );
 
 export default BloodDonationReqModel;

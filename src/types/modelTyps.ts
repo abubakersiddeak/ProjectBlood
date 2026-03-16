@@ -23,7 +23,9 @@ export interface IUserModel extends Document {
   role: "user" | "admin" | "volunteer";
   avatar: string;
   bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
-  donationHistory: IDonationModel[];
+  donationCount?: number; // শুধু কাউন্ট (optional)
+  lastDonationDate?: Date; // শেষ ডোনেশনের তারিখ
+  donationHistory?: IDonationRecord[];
   location: {
     type: "Point";
     coordinates: [number, number];
@@ -61,10 +63,13 @@ export interface IFundModel extends Document {
 }
 
 // --- IBloodDonationRequestModel Interface ---
+
 export interface IPotentialDonor {
   donorId: Types.ObjectId;
   status: "interested" | "confirmed" | "declined";
   appliedAt: Date;
+  confirmedAt?: Date;
+  declinedAt?: Date;
 }
 
 export interface IBloodDonationRequest extends Document {
@@ -87,6 +92,7 @@ export interface IBloodDonationRequest extends Document {
   donationStatus: "pending" | "in-progress" | "success" | "cancel";
   potentialDonors: IPotentialDonor[];
   additionalMessage?: string;
+  completedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -28,6 +28,8 @@ import {
 import { toast } from "sonner";
 import server from "@/lib/api";
 import EditDonationReqModal from "../modal/EditDonationReqModal";
+import Image from "next/image";
+import DonationRequesterModal from "../modal/DonationRequesterModal";
 
 export default function OwnCreatedBloodReq() {
   const [requests, setRequests] = useState<IDonationRequest[]>([]);
@@ -39,7 +41,10 @@ export default function OwnCreatedBloodReq() {
   const [deleting, setDeleting] = useState(false);
   const [editRequest, setEditRequest] = useState<IDonationRequest | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
+  const [isDonorModalOpen, setIsDonorModalOpen] = useState(false);
+  const [selectedDonor, setSelectedDonor] = useState<any>(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<IDonationRequest | null>(null);
   useEffect(() => {
     fetchMyRequests();
   }, [statusFilter, page]);
@@ -149,7 +154,7 @@ export default function OwnCreatedBloodReq() {
       </div>
     );
   }
-
+  console.log(requests);
   return (
     <div className="space-y-6">
       {/* Clean Filter Tabs */}
@@ -220,81 +225,134 @@ export default function OwnCreatedBloodReq() {
               </CardHeader>
 
               <CardContent className="space-y-3">
-                {/* Details */}
-                <div className="flex justify-between items-start gap-3">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
-                      {request.recipientName}
-                    </CardTitle>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-1 flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-400 shrink-0" />
-                      {new Date(request.donationDate).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "short",
-                          day: "numeric",
-                        },
-                      )}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Building2 className="h-4 w-4 text-gray-400 shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300 line-clamp-1">
-                      {request.hospitalName}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm">
-                    <Droplet className="h-4 w-4 text-gray-400 shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {request.totalUnitsNeeded} Unit
-                      {request.totalUnitsNeeded !== 1 ? "s" : ""} needed
-                    </span>
-                  </div>
-
-                  {request.location && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-gray-400 shrink-0" />
-                      <span className="text-gray-700 dark:text-gray-300 line-clamp-1">
-                        {request.location.city || request.location.address}
-                      </span>
+                <div className="grid grid-cols-3">
+                  <div className="col-span-2">
+                    {/* Details */}
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
+                          {request.recipientName}
+                        </CardTitle>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-1 flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-gray-400 shrink-0" />
+                          {new Date(request.donationDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                            },
+                          )}
+                        </p>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                {/* Status Badge */}
-                <div>
-                  <Badge
-                    className={`${getStatusColor(request.donationStatus)} border-0 rounded-none`}
-                  >
-                    {request.donationStatus}
-                  </Badge>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Building2 className="h-4 w-4 text-gray-400 shrink-0" />
+                        <span className="text-gray-700 dark:text-gray-300 line-clamp-1">
+                          {request.hospitalName}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm">
+                        <Droplet className="h-4 w-4 text-gray-400 shrink-0" />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {request.totalUnitsNeeded} Unit
+                          {request.totalUnitsNeeded !== 1 ? "s" : ""} needed
+                        </span>
+                      </div>
+
+                      {request.location && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <MapPin className="h-4 w-4 text-gray-400 shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 line-clamp-1">
+                            {request.location.city || request.location.address}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Status Badge */}
+                    <div>
+                      <Badge
+                        className={`${getStatusColor(request.donationStatus)} border-0 rounded-none`}
+                      >
+                        {request.donationStatus}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <h1 className="font-bold text-center text-green-600">
+                        {request.donationStatus === "success" ? (
+                          <div>
+                            <p>Donated By</p> <hr />
+                          </div>
+                        ) : request.donationStatus === "pending" ? null : (
+                          <div>
+                            {" "}
+                            <p>Interested</p> <hr />
+                          </div>
+                        )}
+                      </h1>
+
+                      {request.potentialDonors?.map((donnor, index) => {
+                        return (
+                          <div key={index}>
+                            <div className="mt-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedDonor(donnor);
+                                  setSelectedRequest(request);
+                                  setIsDonorModalOpen(true);
+                                }}
+                                className="flex gap-2 cursor-pointer hover:scale-110 transition duration-300"
+                              >
+                                <Image
+                                  src={
+                                    donnor.donorId?.avatar ||
+                                    "https://i.ibb.co.com/20yB5J5L/vecteezy-man-empty-vector-photo-placeholder-for-social-36594092.webp"
+                                  }
+                                  height={30}
+                                  width={30}
+                                  alt="Donor Image"
+                                  className="h-5 w-5"
+                                />{" "}
+                                <p>{donnor.donorId?.fullName?.split(" ")[0]}</p>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-                  <Button
-                    onClick={() => handleEditClick(request)}
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 rounded-none cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => setDeleteId(request._id)}
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 cursor-pointer rounded-none text-red-600 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
+                {request.donationStatus === "success" ? (
+                  <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-800"></div>
+                ) : (
+                  <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <Button
+                      onClick={() => handleEditClick(request)}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 rounded-none cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      onClick={() => setDeleteId(request._id)}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 cursor-pointer rounded-none text-red-600 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -344,7 +402,7 @@ export default function OwnCreatedBloodReq() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-md rounded-none">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="bg-red-100 dark:bg-red-900 p-2 rounded-full">
@@ -360,12 +418,15 @@ export default function OwnCreatedBloodReq() {
               permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="cursor-pointer" disabled={deleting}>
+          <AlertDialogFooter className="gap-2 ">
+            <AlertDialogCancel
+              className="cursor-pointer rounded-none"
+              disabled={deleting}
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700 cursor-pointer"
+              className="bg-red-600 rounded-none hover:bg-red-700 cursor-pointer"
               onClick={() => deleteId && handleReqDeleteClick(deleteId)}
               disabled={deleting}
             >
@@ -394,6 +455,13 @@ export default function OwnCreatedBloodReq() {
         }}
         onSuccess={handleEditSuccess}
         request={editRequest}
+      />
+      {/* show intarested requester Modal */}
+      <DonationRequesterModal
+        open={isDonorModalOpen}
+        donor={selectedDonor}
+        request={selectedRequest}
+        onClose={() => setIsDonorModalOpen(false)}
       />
     </div>
   );

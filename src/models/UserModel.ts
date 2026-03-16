@@ -1,33 +1,5 @@
-import { IDonationModel, IUserModel } from "@/types/modelTyps";
+import { IUserModel } from "@/types/modelTyps";
 import mongoose, { Schema, Model } from "mongoose";
-
-// --- Donation Sub-document Schema ---
-const donationSchema = new Schema<IDonationModel>(
-  {
-    receiver: { type: Schema.Types.ObjectId, ref: "User" },
-    date: { type: Date, required: true },
-
-    // হসপিটালের বিস্তারিত তথ্য
-    hospital: {
-      name: { type: String, required: true },
-      address: { type: String }, // মানুষের পড়ার জন্য ঠিকানা
-      location: {
-        type: {
-          type: String,
-          enum: ["Point"],
-          default: "Point",
-        },
-        coordinates: {
-          type: [Number], // [longitude, latitude]
-          required: true,
-        },
-      },
-    },
-
-    note: { type: String },
-  },
-  { _id: true },
-);
 
 // --- Main User Schema ---
 const userSchema = new Schema<IUserModel>(
@@ -70,7 +42,8 @@ const userSchema = new Schema<IUserModel>(
       required: true,
       index: true, // সার্চ ফাস্ট করার জন্য ইনডেক্স
     },
-    donationHistory: [donationSchema],
+    donationCount: { type: Number, default: 0 },
+    lastDonationDate: { type: Date },
 
     // GeoJSON Standard Location
     location: {
@@ -121,7 +94,12 @@ const userSchema = new Schema<IUserModel>(
 
   { timestamps: true },
 );
-
+userSchema.virtual("donationHistory", {
+  ref: "DonationRecord",
+  localField: "_id",
+  foreignField: "donorId",
+  options: { sort: { donationDate: -1 } }, // নতুন আগে
+});
 // --- Indexes ---
 // নিকটস্থ ডোনার দ্রুত খুঁজে বের করার জন্য (Spatial Query)
 userSchema.index({ location: "2dsphere" });

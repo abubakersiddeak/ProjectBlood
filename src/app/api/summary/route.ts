@@ -14,6 +14,7 @@ export async function GET() {
       { status: 401 },
     );
   }
+
   const role = session?.user.role || "user";
   const userId = session?.user.id;
 
@@ -23,7 +24,7 @@ export async function GET() {
 
       // ✅ User এর সব তথ্য fetch করা
       const user = await UserModel.findById(userId).select(
-        "fullName bloodGroup isAvailable donationHistory location phone avatar followerCount",
+        "fullName bloodGroup isAvailable donationCount lastDonationDate location phone avatar followerCount",
       );
 
       if (!user) {
@@ -56,12 +57,12 @@ export async function GET() {
       // ✅ Active/Pending requests
       const activeRequests = await BloodDonationReqModel.countDocuments({
         requesterId: userId,
-        donationStatus: { $in: ["pending"] },
+        donationStatus: { $in: ["pending", "in-progress"] },
       });
 
       // ✅ নিজে যে requests এ respond করেছে (Potential Donor হিসেবে)
       const respondedRequests = await BloodDonationReqModel.countDocuments({
-        "potentialDonors.donorId": userId,
+        "potentialDonors.donorId": new mongoose.Types.ObjectId(userId),
       });
 
       // ✅ Confirmed donations (যেখানে আমি donor হিসেবে confirmed)
@@ -80,8 +81,13 @@ export async function GET() {
       })
         .sort({ donationDate: -1 })
         .limit(5)
-        .populate("requesterId", "fullName")
+        .populate("requesterId", "fullName avatar")
         .lean();
+
+      // ✅ Total donations count (from DonationRecord)
+      const totalDonations = await DonationRecordModel.countDocuments({
+        donorId: userId,
+      });
 
       // ✅ Total verified donations
       const verifiedDonations = await DonationRecordModel.countDocuments({
@@ -90,22 +96,14 @@ export async function GET() {
       });
 
       // ✅ Last donation date calculation
-      let lastDonationDate = null;
+      const lastDonationDate = user.lastDonationDate || null;
       let nextEligibleDate = null;
       let canDonateNow = true;
       let daysUntilEligible = 0;
 
-      if (user.donationHistory && user.donationHistory.length > 0) {
-        // সবচেয়ে সাম্প্রতিক donation
-        const sortedDonations = user.donationHistory.sort(
-          (a: any, b: any) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime(),
-        );
-
-        lastDonationDate = sortedDonations[0].date;
-
+      if (lastDonationDate) {
         // পুরুষদের জন্য 90 days, মহিলাদের জন্য 120 days gap
-        const gapDays = 90;
+        const gapDays = 90; // আপনি চাইলে gender based করতে পারেন
 
         const lastDate = new Date(lastDonationDate);
         nextEligibleDate = new Date(lastDate);
@@ -119,7 +117,6 @@ export async function GET() {
       }
 
       // ✅ Lives saved calculation (1 donation = 3 lives)
-      const totalDonations = user.donationHistory?.length || 0;
       const livesSaved = totalDonations * 3;
 
       // ✅ Donor level calculation
@@ -157,10 +154,13 @@ export async function GET() {
 
       // ✅ This year's donations
       const currentYear = new Date().getFullYear();
-      const donationsThisYear =
-        user.donationHistory?.filter((donation: any) => {
-          return new Date(donation.date).getFullYear() === currentYear;
-        }).length || 0;
+      const donationsThisYear = await DonationRecordModel.countDocuments({
+        donorId: userId,
+        donationDate: {
+          $gte: new Date(`${currentYear}-01-01`),
+          $lte: new Date(`${currentYear}-12-31`),
+        },
+      });
 
       // ✅ Average rating from donation records
       const ratingStats = await DonationRecordModel.aggregate([
@@ -180,7 +180,6 @@ export async function GET() {
         ratingStats.length > 0 ? ratingStats[0].totalRatings : 0;
 
       // ✅ Nearby active requests count - FIXED VERSION
-      // Use $geoWithin with $centerSphere instead of $near for counting
       let nearbyRequests = 0;
 
       if (
@@ -189,7 +188,7 @@ export async function GET() {
         user.location.coordinates.length === 2
       ) {
         try {
-          // Method 1: Using aggregate with $geoNear (proper way for counting)
+          // Ensure 2dsphere index exists on BloodDonationReqModel
           const nearbyResult = await BloodDonationReqModel.aggregate([
             {
               $geoNear: {
@@ -211,16 +210,16 @@ export async function GET() {
           ]);
 
           nearbyRequests = nearbyResult.length > 0 ? nearbyResult[0].total : 0;
-        } catch (geoError) {
-          console.log("Geospatial query error, using fallback:", geoError);
+        } catch (geoError: any) {
+          console.log("Geospatial query error:", geoError.message);
 
-          // Fallback: Just count all active requests if geo query fails
+          // Fallback: Just count all active requests
           nearbyRequests = await BloodDonationReqModel.countDocuments({
             donationStatus: { $in: ["pending", "in-progress"] },
           });
         }
       } else {
-        // If user location is not available, just count all active requests
+        // If user location is not available
         nearbyRequests = await BloodDonationReqModel.countDocuments({
           donationStatus: { $in: ["pending", "in-progress"] },
         });
@@ -229,7 +228,7 @@ export async function GET() {
       // ✅ Matching blood group requests
       const matchingBloodRequests = await BloodDonationReqModel.countDocuments({
         bloodGroup: user.bloodGroup,
-        donationStatus: { $in: ["pending"] },
+        donationStatus: "pending",
         donationDate: { $gte: new Date() }, // only upcoming dates
       });
 
@@ -255,7 +254,7 @@ export async function GET() {
           phone: user.phone,
           avatar: user.avatar,
           location: user.location,
-          followerCount: user.followerCount,
+          followerCount: user.followerCount || 0,
         },
 
         // Donation Statistics
@@ -304,10 +303,6 @@ export async function GET() {
 
         // Achievements
         badges: badges,
-
-        // Legacy field (for backward compatibility)
-        ownCreateBloodReq: ownCreateBloodReq,
-        ownTotalDonation: totalDonations,
       };
 
       return NextResponse.json({
@@ -325,39 +320,98 @@ export async function GET() {
       );
     }
   } else {
-    // Admin/Volunteer summary
+    // ✅ Admin/Volunteer summary
     try {
       await dbConnect();
 
       // 1️⃣ Total users
       const totalUsers = await UserModel.countDocuments();
-      const totalAdmins = await UserModel.countDocuments({
-        role: "admin",
-      });
+      const totalAdmins = await UserModel.countDocuments({ role: "admin" });
       const totalVolunteer = await UserModel.countDocuments({
         role: "volunteer",
       });
 
       // 2️⃣ Blood donation requests counts by status
-      const statuses = ["pending", "in-progress", "success", "cancel"];
-      const requestsCount: Record<string, number> = {};
+      const requestsCount = await BloodDonationReqModel.aggregate([
+        {
+          $group: {
+            _id: "$donationStatus",
+            count: { $sum: 1 },
+          },
+        },
+      ]);
 
-      await Promise.all(
-        statuses.map(async (status) => {
-          requestsCount[status] = await BloodDonationReqModel.countDocuments({
-            donationStatus: status,
-          });
-        }),
-      );
+      // Convert array to object
+      const statusCounts: Record<string, number> = {
+        pending: 0,
+        "in-progress": 0,
+        success: 0,
+        cancel: 0,
+      };
+
+      requestsCount.forEach((item) => {
+        if (item._id) {
+          statusCounts[item._id] = item.count;
+        }
+      });
+
+      // 3️⃣ Total donation records
+      const totalDonationRecords = await DonationRecordModel.countDocuments();
+      const verifiedDonations = await DonationRecordModel.countDocuments({
+        isVerified: true,
+      });
+
+      // 4️⃣ Blood group wise statistics
+      const bloodGroupStats = await UserModel.aggregate([
+        {
+          $group: {
+            _id: "$bloodGroup",
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { count: -1 } },
+      ]);
+
+      // 5️⃣ Recent activities (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const recentRequests = await BloodDonationReqModel.countDocuments({
+        createdAt: { $gte: sevenDaysAgo },
+      });
+
+      const recentDonations = await DonationRecordModel.countDocuments({
+        donationDate: { $gte: sevenDaysAgo },
+      });
 
       const summary = {
-        totalUsers,
-        totalAdmins,
-        totalVolunteer,
-        totalPending: requestsCount["pending"] || 0,
-        totalInProgress: requestsCount["in-progress"] || 0,
-        totalSuccess: requestsCount["success"] || 0,
-        totalCancel: requestsCount["cancel"] || 0,
+        users: {
+          total: totalUsers,
+          admins: totalAdmins,
+          volunteers: totalVolunteer,
+          regularUsers: totalUsers - totalAdmins - totalVolunteer,
+        },
+        requests: {
+          total:
+            statusCounts.pending +
+            statusCounts["in-progress"] +
+            statusCounts.success +
+            statusCounts.cancel,
+          pending: statusCounts.pending,
+          inProgress: statusCounts["in-progress"],
+          success: statusCounts.success,
+          cancel: statusCounts.cancel,
+        },
+        donations: {
+          total: totalDonationRecords,
+          verified: verifiedDonations,
+          unverified: totalDonationRecords - verifiedDonations,
+        },
+        bloodGroups: bloodGroupStats,
+        recentActivity: {
+          requests: recentRequests,
+          donations: recentDonations,
+        },
       };
 
       return NextResponse.json({
@@ -370,7 +424,6 @@ export async function GET() {
         {
           success: false,
           message: error.message || "Failed to fetch dashboard summary",
-          data: {},
         },
         { status: 500 },
       );

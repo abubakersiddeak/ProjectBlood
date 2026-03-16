@@ -43,6 +43,21 @@ export async function GET(req: Request) {
     const [requests, total] = await Promise.all([
       BloodDonationReqModel.find(query)
         .populate("requesterId", "fullName avatar")
+        .populate({
+          path: "potentialDonors.donorId",
+          select: "fullName avatar phone bloodGroup ",
+          transform: (doc) => {
+            if (doc) {
+              // Convert the doc to a plain object and add the count
+              const obj = doc.toObject ? doc.toObject() : doc;
+              obj.donationCount = obj.donationHistory
+                ? obj.donationHistory.length
+                : 0;
+              return obj;
+            }
+            return doc;
+          },
+        })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
