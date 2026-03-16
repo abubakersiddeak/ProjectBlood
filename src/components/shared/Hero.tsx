@@ -109,29 +109,6 @@ export default function Hero() {
                 </motion.p>
               </div>
 
-              {/* Features Pills */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex flex-wrap gap-3 justify-center lg:justify-start"
-              >
-                {features.map((feature, index) => {
-                  const IconComponent = feature.icon;
-                  return (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <IconComponent size={16} className="text-red-600" />
-                      <span className="text-xs md:text-sm font-medium text-gray-700">
-                        {feature.text}
-                      </span>
-                    </div>
-                  );
-                })}
-              </motion.div>
-
               {/* CTA Buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -167,7 +144,28 @@ export default function Hero() {
                   </span>
                 </Link>
               </motion.div>
-
+              {/* Features Pills */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="flex flex-wrap gap-3 justify-center lg:justify-start"
+              >
+                {features.map((feature, index) => {
+                  const IconComponent = feature.icon;
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <IconComponent size={16} className="text-red-600" />
+                      <span className="text-xs md:text-sm font-medium text-gray-700">
+                        {feature.text}
+                      </span>
+                    </div>
+                  );
+                })}
+              </motion.div>
               {/* Fund Donation Link */}
               {/* <motion.div
                 initial={{ opacity: 0, y: 20 }}
