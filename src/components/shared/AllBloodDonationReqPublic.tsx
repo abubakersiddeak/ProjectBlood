@@ -210,7 +210,7 @@ export default function AllBloodDonationReqPublic() {
   );
 
   return (
-    <section className="bg-white min-h-screen py-8 md:py-16 lg:py-20">
+    <section className="bg-white  py-8 md:py-16 lg:py-20">
       <div className="max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto">
         {/* Header */}
         <div className="mb-6 md:mb-10 border-b border-gray-200 pb-4 md:pb-6">

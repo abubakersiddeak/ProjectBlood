@@ -214,7 +214,7 @@ export default function RegisterPage() {
           <p class="text-gray-600">Welcome to our blood donation community!</p>
           <p class="text-sm text-gray-500 mt-2">You can now login with your credentials.</p>
         `,
-        confirmButtonText: "Go to Home",
+        confirmButtonText: "Go to Dashboard",
         confirmButtonColor: "#0B6623",
       });
       const res = await signIn("credentials", {

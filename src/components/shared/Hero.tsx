@@ -79,20 +79,6 @@ export default function Hero() {
                   Every Drop of Blood
                   <span className="block mt-2 text-red-600 relative">
                     Saves A Life
-                    <svg
-                      className="absolute -bottom-2 left-0 w-full hidden md:block"
-                      height="12"
-                      viewBox="0 0 300 12"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M2 10C50 5 100 2 150 5C200 8 250 7 298 10"
-                        stroke="#dc2626"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
-                    </svg>
                   </span>
                 </motion.h1>
 
