@@ -1,0 +1,188 @@
+
+> bloodlinkbd@0.1.0 lint
+> eslint
+
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/socketServer/script.js
+  9:10  warning  'UserModel' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/(auth)/forgot-password/page.tsx
+   75:17  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  123:36  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/(auth)/login/page.tsx
+  36:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  75:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/(auth)/register/page.tsx
+  231:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/auth/forgot-password/route.ts
+  84:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/auth/reset-password/route.ts
+  68:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/auth/verify-reset-token/route.ts
+  48:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/bloodDonationReq/[id]/donate/route.ts
+  59:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/bloodDonationReq/[id]/route.ts
+  219:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  288:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  303:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/bloodDonationReq/matching/route.ts
+  36:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/bloodDonationReq/my-requests/route.ts
+  34:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/bloodDonationReq/route.ts
+   61:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  149:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/bloodDonationReq/totalBloodDonationReqPublic/route.ts
+   4:8   warning  'UserModel' is defined but never used     @typescript-eslint/no-unused-vars
+  27:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/completeDonation/route.ts
+    9:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  284:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/contact/route.ts
+  30:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/summary/route.ts
+  213:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  312:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  421:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/users/[userId]/changeEmail/route.ts
+  78:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/users/[userId]/changePassword/route.ts
+  68:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/users/[userId]/update/route.ts
+  98:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/api/users/search-donors/route.ts
+  17:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/dashboard/admin/profile/page.tsx
+  98:24  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/dashboard/user/page.tsx
+   20:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   48:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  344:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  452:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/app/dashboard/user/profile/page.tsx
+  98:24  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/layout/Footer.tsx
+  85:9  warning  'handleNewsletterSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/layout/Navbar.tsx
+  5:35  warning  'MessageCircleMore' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/modal/DonationRequesterModal.tsx
+  17:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/modal/ReqDetailModal.tsx
+  79:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/modal/ShowDonationReqDetailsModal.tsx
+  107:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/section-cards.tsx
+  98:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/shared/AllBloodDonationReq.tsx
+  40:7   warning  'STATUS_OPTIONS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  74:36  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/shared/Contact.tsx
+   4:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+  83:14  warning  'error' is defined but never used   @typescript-eslint/no-unused-vars
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/shared/DangerZone.tsx
+  121:21  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  187:21  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  245:21  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  701:78  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/shared/MatchingBloodReqWithUser.tsx
+  54:6  warning  React Hook useCallback has a missing dependency: 'requests'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/shared/OwnCreatedBloodReq.tsx
+   45:54  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   50:6   warning  React Hook useEffect has a missing dependency: 'fetchMyRequests'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  194:22  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                     react/no-unescaped-entities
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/shared/UserDetails.tsx
+    22:3   warning  'IconUsers' is defined but never used                            @typescript-eslint/no-unused-vars
+    23:3   warning  'IconHeart' is defined but never used                            @typescript-eslint/no-unused-vars
+    24:3   warning  'IconFileText' is defined but never used                         @typescript-eslint/no-unused-vars
+   126:28  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   133:32  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   274:21  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  1344:3   warning  'currentStatus' is defined but never used                        @typescript-eslint/no-unused-vars
+  1416:72  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/ui/sidebar.tsx
+  614:26  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/components/ui/sidebar.tsx:614:26
+  612 |   // Random width between 50 to 90%.
+  613 |   const width = React.useMemo(() => {
+> 614 |     return `${Math.floor(Math.random() * 40) + 50}%`;
+      |                          ^^^^^^^^^^^^^ Cannot call impure function
+  615 |   }, []);
+  616 |
+  617 |   return (  react-hooks/purity
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/lib/dashboardMenuUtils.ts
+    8:10  warning  'BanknoteArrowDown' is defined but never used  @typescript-eslint/no-unused-vars
+    8:29  warning  'Cctv' is defined but never used               @typescript-eslint/no-unused-vars
+    8:35  warning  'CirclePlus' is defined but never used         @typescript-eslint/no-unused-vars
+  111:44  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/lib/email.ts
+  33:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/lib/geoLocationUtils.ts
+   7:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/types/frontendModelInterface.ts
+  52:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/abubakar-sidik/Desktop/code/bloodlinkbd/src/types/propsTyps.ts
+  19:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  66:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 88 problems (69 errors, 19 warnings)
+

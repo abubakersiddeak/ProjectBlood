@@ -7,7 +7,6 @@ export async function GET(req: NextRequest) {
     await dbConnect();
 
     const { searchParams } = new URL(req.url);
-
     const bloodGroup = searchParams.get("bloodGroup");
     const district = searchParams.get("district");
     const upazila = searchParams.get("upazila");
@@ -19,16 +18,14 @@ export async function GET(req: NextRequest) {
       isAvailable: true,
     };
 
-    if (bloodGroup && bloodGroup.trim() !== "") {
+    if (bloodGroup && bloodGroup.trim() !== "" && bloodGroup !== "All") {
       query.bloodGroup = bloodGroup.toUpperCase().trim();
     }
-
     if (district && district.trim() !== "") {
       query["location.address.district"] = {
         $regex: new RegExp(district.trim(), "i"),
       };
     }
-
     if (upazila && upazila.trim() !== "") {
       query["location.address.upazila"] = {
         $regex: new RegExp(upazila.trim(), "i"),
@@ -37,24 +34,8 @@ export async function GET(req: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Aggregate instead of find
     const donors = await UserModel.aggregate([
       { $match: query },
-
-      {
-        $addFields: {
-          totalDonation: { $size: "$donationHistory" },
-          lastDonation: { $max: "$donationHistory.date" },
-        },
-      },
-
-      {
-        $sort: { lastDonation: 1, createdAt: -1 },
-      },
-
-      { $skip: skip },
-      { $limit: limit },
-
       {
         $project: {
           avatar: 1,
@@ -63,33 +44,27 @@ export async function GET(req: NextRequest) {
           phone: 1,
           bloodGroup: 1,
           location: 1,
-          lastDonation: 1,
+          lastDonation: "$lastDonationDate", // Virtual এর বদলে সরাসরি ফিল্ড
           createdAt: 1,
-          totalDonation: 1,
+          totalDonation: "$donationCount", // Virtual এর বদলে সরাসরি ফিল্ড
         },
       },
+      { $sort: { lastDonation: 1, createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
     ]);
-    console.log(donors);
+
     const total = await UserModel.countDocuments(query);
-    const totalPages = Math.ceil(total / limit);
+
     return NextResponse.json({
       success: true,
       data: donors,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages,
-        hasMore: page < totalPages,
-      },
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
     });
   } catch (error: any) {
+    console.error("Search API Error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        message: error.message || "Failed to search donors",
-        data: [],
-      },
+      { success: false, message: error.message },
       { status: 500 },
     );
   }

@@ -210,8 +210,8 @@ export default function AllBloodDonationReqPublic() {
   );
 
   return (
-    <section className="bg-white  py-8 md:py-16 lg:py-20">
-      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto">
+    <section className="bg-white  py-12 ">
+      <div className="max-w-7xl mx-auto px-3 lg:px-3 2xl:px-0">
         {/* Header */}
         <div className="mb-6 md:mb-10 border-b border-gray-200 pb-4 md:pb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 md:mb-6 gap-3 md:gap-4">

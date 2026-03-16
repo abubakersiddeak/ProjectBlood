@@ -121,7 +121,7 @@ export default function Hero() {
                 </Link>
 
                 <Link
-                  href="/search"
+                  href="/searchDonors"
                   className="group bg-white border-2 border-gray-900 text-gray-900 px-6 md:px-8 py-3 md:py-4 text-sm md:text-base hover:bg-gray-900 hover:text-white transition-all font-bold uppercase tracking-wide text-center cursor-pointer"
                 >
                   <span className="flex items-center justify-center gap-2">
