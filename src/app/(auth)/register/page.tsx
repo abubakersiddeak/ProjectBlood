@@ -204,6 +204,7 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         // If server returns 400, 401, 500 etc.
+        console.log(result.message);
         throw new Error(result.message || "Registration failed");
       }
 
@@ -233,9 +234,7 @@ export default function RegisterPage() {
       Swal.fire({
         icon: "error",
         title: "Registration Failed",
-        text:
-          error.response?.data?.message ||
-          "Registration failed. Please try again.",
+        text: error || "Registration failed. Please try again.",
         confirmButtonColor: "#dc2626",
       });
     } finally {
