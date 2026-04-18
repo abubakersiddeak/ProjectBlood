@@ -68,14 +68,17 @@ const createColumns = (
     {
       accessorKey: "avatar",
       header: "",
+      size: 60,
       cell: ({ row }) => (
-        <Image
-          src={row.getValue("avatar")}
-          alt="Avatar"
-          height={50}
-          width={50}
-          className="w-8 h-8  object-cover border"
-        />
+        <div className=" min-w-10 flex justify-center">
+          <Image
+            src={row.getValue("avatar")}
+            alt="Avatar"
+            height={50}
+            width={50}
+            className="w-8 h-8  object-cover border"
+          />
+        </div>
       ),
     },
     {
